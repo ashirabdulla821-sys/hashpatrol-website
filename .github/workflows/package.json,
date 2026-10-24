@@ -1,0 +1,17 @@
+{
+  "name": "hashpatrol-auth",
+  "version": "1.0.0",
+  "description": "Phone and email OTP login and registration for HashPatrol",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.14"
+  }
+}
