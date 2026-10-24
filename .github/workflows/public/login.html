@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign in – HashPatrol®</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f6;--fg:#111216;--mut:#5d6068;--card:#fff;--line:#d9dbdf;--sig:#f2c200;--err:#b3261e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#101114;--fg:#f4f5f6;--mut:#9a9da6;--card:#181a1f;--line:#2b2e35;--err:#ff8a80;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--bg);color:var(--fg);font:400 16px/1.5 Archivo,system-ui,sans-serif}
+main{width:100%;max-width:400px}
+.brand{font-weight:800;font-size:22px;margin-bottom:18px}
+.brand b{background:var(--fg);color:var(--bg);padding:0 8px;margin-right:6px;border-radius:3px}
+h1{font-size:28px;line-height:1.1;margin:0 0 6px}
+p{color:var(--mut);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+label{display:block;font-weight:600;margin:0 0 6px}
+input{width:100%;font:inherit;padding:13px;border:2px solid var(--fg);border-radius:8px;background:var(--bg);color:var(--fg);margin-bottom:14px}
+button{width:100%;font:600 16px Archivo,sans-serif;padding:13px;border:0;border-radius:8px;background:var(--sig);color:#111216;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+button.link{background:none;color:var(--fg);text-decoration:underline;margin-top:8px;padding:8px}
+:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+#msg{min-height:22px;margin:0 0 10px;font-size:14px}
+#msg.err{color:var(--err)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><b>#</b>HashPatrol®</div>
+
+  <section class="card" id="s1">
+    <h1>Sign in or create an account</h1>
+    <p>Enter your email, or your mobile number with country code. We will send a 6-digit code.</p>
+    <label for="id">Email or mobile number</label>
+    <input id="id" autocomplete="username" inputmode="email" placeholder="you@example.com or +919876543210">
+    <button id="send">Send code</button>
+  </section>
+
+  <section class="card" id="s2" hidden>
+    <h1>Enter your code</h1>
+    <p id="sent">We sent a code.</p>
+    <label for="code">6-digit code</label>
+    <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+    <label for="name">Your name (for new accounts)</label>
+    <input id="name" autocomplete="name" placeholder="Optional">
+    <button id="verify">Verify and sign in</button>
+    <button class="link" id="again">Send a new code</button>
+  </section>
+
+  <section class="card" id="s3" hidden>
+    <h1 id="hi">You are signed in</h1>
+    <p id="who"></p>
+    <button id="out">Sign out</button>
+  </section>
+
+  <p id="msg" role="status" aria-live="polite"></p>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)},ident='';
+function say(t,err){var m=$('msg');m.textContent=t||'';m.className=err?'err':''}
+function show(n){['s1','s2','s3'].forEach(function(s){$(s).hidden=s!==n})}
+function api(path,body){return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),credentials:'same-origin'}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||'Something went wrong.');return j})})}
+function busy(b,on){b.disabled=on}
+function sendCode(){var b=$('send');ident=$('id').value.trim();say('');busy(b,true);
+  api('/api/auth/request-otp',{identifier:ident}).then(function(){$('sent').textContent='We sent a code to '+ident+'. It expires in 5 minutes.';show('s2');$('code').focus()}).catch(function(e){say(e.message,true)}).then(function(){busy(b,false)})}
+$('send').onclick=sendCode;
+$('again').onclick=function(){say('');api('/api/auth/request-otp',{identifier:ident}).then(function(){say('A new code is on its way.')}).catch(function(e){say(e.message,true)})};
+$('verify').onclick=function(){var b=$('verify');say('');busy(b,true);
+  api('/api/auth/verify-otp',{identifier:ident,code:$('code').value,name:$('name').value}).then(function(j){done(j.user,j.isNew)}).catch(function(e){say(e.message,true)}).then(function(){busy(b,false)})};
+function done(u,isNew){$('hi').textContent=isNew?'Account created':'Welcome back';$('who').textContent='Signed in as '+(u.name||u.email||u.phone)+'.';show('s3');say('')}
+$('out').onclick=function(){api('/api/logout').then(function(){show('s1');say('You are signed out.')})};
+fetch('/api/me',{credentials:'same-origin'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)done(j.user,false)});
+</script>
+</body>
+</html>
