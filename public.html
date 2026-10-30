@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HashPatrol® – Car news, launches and service near you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f6;--fg:#111216;--mut:#5d6068;--card:#fff;--line:#d9dbdf;--sig:#f2c200;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101114;--fg:#f4f5f6;--mut:#9a9da6;--card:#181a1f;--line:#2b2e35;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101114;--fg:#f4f5f6;--mut:#9a9da6;--card:#181a1f;--line:#2b2e35;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.55 Archivo,system-ui,Arial,sans-serif}
+a{color:inherit}:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+.top{position:fixed;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top,0px) + 10px) 20px 10px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(#000a,#0000);color:#fff}
+.brand{font-weight:800;font-size:20px;text-decoration:none}.brand b{background:#fff;color:#111;padding:0 7px;margin-right:6px;border-radius:3px}
+.top nav{display:flex;gap:16px;font-size:14px;overflow-x:auto}.top nav a{text-decoration:none;opacity:.85;white-space:nowrap}
+/* scroll stage */
+.scroll{height:420vh;position:relative;background:#0b0c10}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;color:#fff}
+.scene{position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.scene.on{opacity:1}
+.sky{position:absolute;inset:0}
+.far,.mid{position:absolute;bottom:26%;left:0;width:320vw}
+.far{height:34%}.mid{height:22%}
+.ground{position:absolute;left:0;right:0;bottom:0;height:26%}
+.line{position:absolute;left:0;right:0;bottom:12%;height:5px}
+.car{position:absolute;left:50%;bottom:15%;width:min(96vw,760px);margin-left:calc(min(96vw,760px)/-2);will-change:transform;filter:drop-shadow(0 18px 14px #0008)}
+.car svg{width:100%;height:auto;display:block}
+.speed{position:absolute;inset:30% 0 30% 0;opacity:.18;background:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 26px)}
+.info{position:absolute;left:20px;right:20px;top:calc(env(safe-area-inset-top,0px) + 64px);max-width:520px}
+.info h1{font-weight:800;font-size:clamp(30px,6.5vw,64px);line-height:1;margin:0 0 6px;letter-spacing:-.02em}
+.info .price{display:inline-block;border-bottom:2px solid var(--sig);padding-bottom:2px;margin-bottom:16px;color:#e9e9ec}
+.spec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 22px;border-left:2px solid #fff6;padding-left:14px;font-size:14px}
+.spec span{display:block;font-size:12px;color:#c8cad0}.spec b{font-size:17px;font-weight:600}
+.hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);text-align:center;font-size:13px;color:#fffb}
+.dots{position:absolute;right:14px;top:50%;display:flex;flex-direction:column;gap:8px}.dots i{width:8px;height:8px;border-radius:50%;background:#fff5}.dots i.on{background:var(--sig)}
+/* content */
+section{padding:46px 0;border-bottom:1px solid var(--line)}
+h2{font-weight:800;font-size:clamp(24px,4vw,36px);margin:0 0 6px}
+.sub{color:var(--mut);margin:0 0 22px;max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h3{margin:0 0 4px;font-size:18px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--sig);color:#111;margin-bottom:8px}
+.card dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:14px}.card dt{color:var(--mut)}.card dd{margin:0}
+.spy{aspect-ratio:16/9;border-radius:6px;margin-bottom:10px;background:repeating-linear-gradient(135deg,var(--line) 0 10px,transparent 10px 20px);display:grid;place-items:center;color:var(--mut);font-size:13px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+select{width:100%;font:600 15px Archivo,sans-serif;padding:11px;border:2px solid var(--fg);border-radius:6px;background:var(--card);color:var(--fg)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:15px}th{color:var(--mut);font-weight:600;width:28%}
+.btns{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-block;padding:12px 18px;background:var(--fg);color:var(--bg);text-decoration:none;font-weight:600;border-radius:6px}.btn.alt{background:var(--sig);color:#111}
+.note{font-size:13px;color:var(--mut);margin-top:14px}
+footer{padding:30px 0 40px;color:var(--mut);font-size:14px}footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.srch{width:100%;font:600 16px Archivo,sans-serif;padding:13px 14px;border:2px solid var(--fg);border-radius:8px;background:var(--card);color:var(--fg);margin-bottom:12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.chips button,.tabs button{font:600 14px Archivo,sans-serif;padding:8px 14px;border:1px solid var(--fg);border-radius:999px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
+.chips button[aria-pressed="true"],.tabs button[aria-pressed="true"]{background:var(--sig);color:#111;border-color:#111}
+.enc{display:grid;grid-template-columns:260px 1fr;gap:16px}
+.rlist{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto}
+.ritem{text-align:left;font:inherit;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer}
+.ritem[aria-current="true"]{border:2px solid var(--fg)}.ritem small{display:block;color:var(--mut)}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;min-height:300px}
+.panel h3{margin:0 0 8px}.na{color:var(--mut);font-style:italic}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--line);font-size:13px;margin:0 6px 6px 0}
+.part{cursor:pointer}.part:hover rect,.part:focus rect,.part.sel rect{stroke:var(--sig);stroke-width:3}
+.xv text{fill:var(--fg);font:600 12px Archivo,sans-serif}
+@media (max-width:700px){.enc{grid-template-columns:1fr}.rlist{max-height:220px}}
+.bc{cursor:pointer;text-align:left;font:inherit;color:inherit}.bc:hover{border-color:var(--fg)}.bc small{color:var(--mut)}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.links a{padding:8px 14px;border:1px solid var(--fg);border-radius:999px;text-decoration:none;font-size:14px;font-weight:600}
+.scene{display:none!important}#cine{position:absolute;inset:0;width:100%;height:100%;display:block}.bar{position:absolute;left:0;right:0;height:6%;background:#000;z-index:2}.vig{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.55) 100%)}.info,.dots,.hint{z-index:3}
+.adtag{background:transparent;border:1px solid var(--fg);color:var(--fg)}.adcard{border-style:dashed}
+.hs{cursor:pointer}.hs:hover circle,.hs:focus circle{stroke:#fff;stroke-width:3}
+@media (max-width:560px){.cmp{grid-template-columns:1fr}.car{bottom:19%}}
+</style>
+</head>
+<body>
+<div class="top"><a class="brand" href="#top"><b>#</b>HashPatrol®</a><nav aria-label="Sections"><a href="#overland">Overland</a><a href="#brands">Brands</a><a href="#cars">Car guide</a><a href="#world">World list</a><a href="#hydrogen">Hydrogen</a><a href="#daily">Daily</a><a href="#news">News</a><a href="#racing">Racing</a><a href="#sales">Sales</a><a href="#discounts">Discounts</a><a href="#variants">Variants</a><a href="#sites">Websites</a><a href="#launches">Launches</a><a href="#spy">Spy shots</a><a href="#compare">Compare</a><a href="#shows">Autoshows</a><a href="#infrastructure">Service &amp; Infra</a></nav></div>
+
+<main id="top">
+<div class="scroll" id="scroll"><div class="stage">
+
+<div class="scene on" id="s0">
+<div class="sky" style="background:linear-gradient(#0d1024 0%,#3a1c4a 38%,#c8452e 72%,#f5a04a 100%)"></div>
+<div class="far" id="f0" style="background:#1a1428;clip-path:polygon(0 100%,0 50%,4% 50%,4% 30%,9% 30%,9% 60%,14% 60%,14% 20%,19% 20%,19% 55%,26% 55%,26% 35%,31% 35%,31% 65%,38% 65%,38% 25%,44% 25%,44% 55%,52% 55%,52% 40%,58% 40%,58% 70%,66% 70%,66% 30%,72% 30%,72% 55%,80% 55%,80% 45%,86% 45%,86% 60%,93% 60%,93% 35%,100% 35%,100% 100%)"></div>
+<div class="mid" id="m0" style="background:repeating-linear-gradient(90deg,#e5322d 0 40px,#fff 40px 80px);clip-path:polygon(0 80%,100% 80%,100% 100%,0 100%)"></div>
+<div class="ground" style="background:linear-gradient(#34363d,#1b1c20)"></div>
+<div class="line" id="l0" style="background:repeating-linear-gradient(90deg,#fff 0 70px,transparent 70px 140px)"></div>
+<div class="speed" id="sp0"></div>
+<div class="car" id="c0"><svg viewBox="0 0 600 190" aria-label="Illustration of a red racing coupe"><defs>
+<linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a4d"/><stop offset=".55" stop-color="#d1261f"/><stop offset="1" stop-color="#7d0f0c"/></linearGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b6179"/><stop offset=".5" stop-color="#121a24"/><stop offset="1" stop-color="#2d3b4c"/></linearGradient></defs>
+<ellipse cx="300" cy="172" rx="290" ry="9" fill="#0007"/>
+<path d="M18 138C18 122 52 114 108 108L186 86C212 68 262 58 322 58C384 58 424 74 452 96L526 104C566 110 584 122 584 138V152H18Z" fill="url(#rb)"/>
+<path d="M200 90C222 74 266 66 322 66C368 66 398 76 420 96L200 96Z" fill="url(#gl)"/>
+<path d="M60 120C150 110 290 104 560 118" stroke="#fff" stroke-opacity=".28" stroke-width="3" fill="none"/>
+<path d="M214 100H540" stroke="#7d0f0c" stroke-width="2"/>
+<path d="M30 112H96V119H30ZM44 119H52V136H44ZM76 119H84V136H76Z" fill="#14151a"/>
+<path d="M545 116L580 124L548 130Z" fill="#fff7c8"/><path d="M18 128H40V140H18Z" fill="#ff3b30"/>
+<path d="M18 150H584V158H18Z" fill="#14151a"/>
+<g id="w0"></g></svg></div>
+</div>
+
+<div class="scene" id="s1">
+<div class="sky" style="background:linear-gradient(#5aa0d6 0%,#bcd9ea 48%,#f6d9a8 78%,#e0a55c 100%)"></div>
+<div class="far" id="f1" style="background:#8a93a3;clip-path:polygon(0 100%,0 60%,8% 30%,15% 55%,24% 15%,33% 50%,42% 28%,52% 58%,62% 20%,72% 52%,82% 30%,92% 55%,100% 35%,100% 100%)"></div>
+<div class="mid" id="m1" style="background:#5d6b48;clip-path:polygon(0 100%,0 55%,10% 30%,22% 60%,35% 20%,48% 55%,60% 25%,74% 62%,88% 30%,100% 50%,100% 100%)"></div>
+<div class="ground" style="background:linear-gradient(#b5793c,#6e4521)"></div>
+<div class="line" id="l1" style="height:14px;bottom:10%;background:repeating-linear-gradient(90deg,#5a3818 0 90px,transparent 90px 200px);opacity:.45"></div>
+<div class="car" id="c1"><svg viewBox="0 0 600 240" aria-label="Illustration of an off-road 4x4"><defs>
+<linearGradient id="ob" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa43a"/><stop offset=".55" stop-color="#d9650f"/><stop offset="1" stop-color="#7c3706"/></linearGradient>
+<linearGradient id="gl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6e8aa3"/><stop offset=".5" stop-color="#1a2531"/><stop offset="1" stop-color="#3d4f63"/></linearGradient></defs>
+<ellipse cx="300" cy="222" rx="290" ry="10" fill="#0007"/>
+<path d="M40 176V130L92 120L140 80H402L452 114L552 124L568 142V176Z" fill="url(#ob)"/>
+<path d="M150 90H300V118H128ZM310 90H396L430 118H310Z" fill="url(#gl2)"/>
+<path d="M150 70H395M165 70V80M240 70V80M320 70V80M385 70V80" stroke="#15161a" stroke-width="5"/>
+<rect x="190" y="56" width="150" height="9" rx="3" fill="#15161a"/><circle cx="205" cy="60" r="4" fill="#fff6b0"/><circle cx="320" cy="60" r="4" fill="#fff6b0"/>
+<path d="M60 134C160 124 330 122 548 134" stroke="#fff" stroke-opacity=".3" stroke-width="3" fill="none"/>
+<path d="M540 126L566 132V146L540 140Z" fill="#fff6c8"/><path d="M40 134H56V150H40Z" fill="#ff3b30"/>
+<path d="M36 176H570V188H36Z" fill="#14151a"/><path d="M552 150H580V162H552Z" fill="#14151a"/>
+<g id="w1"></g></svg></div>
+</div>
+
+<canvas id="cine" aria-label="Cinematic drive from a highway to an off-road trail" role="img"></canvas><div class="bar" style="top:0"></div><div class="bar" style="bottom:0"></div><div class="vig"></div>
+<div class="info"><h1 id="nm">Highway</h1><div class="price" id="pr">Price TBA</div>
+<div class="spec"><div><span>Road</span><b id="e1">Highway</b></div><div><span>Surface</span><b id="e2">Tarmac</b></div><div><span>Drive mode</span><b id="e3">Normal</b></div><div><span>Next up</span><b id="e4">Gravel track</b></div></div></div>
+<div class="dots"><i class="on"></i><i></i><i></i></div>
+<div class="hint">Scroll to drive from the highway to the off-road trail</div>
+</div></div>
+
+<section id="overland"><div class="wrap"><h2>HashPatrol® Overland Concept</h2><p class="sub">An off-road expedition truck concept built for the trail. Tap a number to see what each part does.</p>
+<div class="tw"><svg id="ovsvg" viewBox="0 0 640 310" role="group" aria-label="Diagram of the HashPatrol overland truck concept" style="min-width:520px;width:100%"><defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset=".6" stop-color="#e06a14"/><stop offset="1" stop-color="#8a3a07"/></linearGradient></defs>
+<rect x="0" y="282" width="640" height="28" fill="#7a5a3a" opacity=".4"/><ellipse cx="330" cy="284" rx="290" ry="8" fill="#0006"/>
+<rect x="95" y="196" width="470" height="18" rx="4" fill="#15161a"/><rect x="235" y="214" width="75" height="16" rx="4" fill="#3a3d46"/>
+<circle cx="54" cy="150" r="30" fill="#0b0c0f"/><circle cx="54" cy="150" r="16" fill="#4a4d55"/>
+<rect x="76" y="90" width="262" height="12" rx="6" fill="#4a4d55"/>
+<rect x="78" y="102" width="252" height="96" rx="6" fill="#1d2027"/><rect x="78" y="102" width="252" height="9" rx="4" fill="#2c3039"/><path d="M205 112V194" stroke="#07080b" stroke-width="2"/><rect x="92" y="140" width="68" height="46" rx="4" fill="#2c3039"/>
+<path d="M96 196L150 112H178L124 196Z" fill="#e06a14" opacity=".85"/>
+<text x="262" y="170" text-anchor="middle" fill="#fff" style="font:800 19px Archivo,sans-serif">#HASHPATROL</text>
+<rect x="108" y="82" width="322" height="6" rx="2" fill="#0d0e12"/><rect x="140" y="62" width="64" height="20" rx="3" fill="#b4bac4"/><rect x="214" y="62" width="64" height="20" rx="3" fill="#b4bac4"/><rect x="290" y="76" width="70" height="5" fill="#2b4a7a"/><rect x="372" y="70" width="80" height="10" rx="2" fill="#1b1c21"/><g fill="#fff3b0"><rect x="376" y="73" width="6" height="4"/><rect x="388" y="73" width="6" height="4"/><rect x="400" y="73" width="6" height="4"/><rect x="412" y="73" width="6" height="4"/><rect x="424" y="73" width="6" height="4"/><rect x="436" y="73" width="6" height="4"/></g>
+<path d="M330 198V150L360 148L384 104H468L500 148L560 150L586 160V198Z" fill="url(#ovg)"/><path d="M392 112H462L488 146H382Z" fill="#1c2430"/><rect x="498" y="98" width="7" height="50" fill="#0d0e12"/><rect x="492" y="94" width="19" height="9" rx="3" fill="#0d0e12"/><rect x="474" y="128" width="12" height="12" rx="3" fill="#e06a14"/><rect x="574" y="156" width="12" height="8" fill="#fff7cc"/>
+<rect x="568" y="168" width="42" height="30" rx="4" fill="#0f1014"/><rect x="576" y="178" width="24" height="12" rx="2" fill="#3a3d46"/><rect x="360" y="198" width="140" height="6" rx="2" fill="#3a3d46"/>
+<g><circle cx="170" cy="236" r="46" fill="#0b0c0f"/><circle cx="170" cy="236" r="41" fill="none" stroke="#2a2c33" stroke-width="7" stroke-dasharray="9 7"/><circle cx="170" cy="236" r="26" fill="#4a4d55"/><circle cx="170" cy="236" r="9" fill="#17181d"/></g>
+<g><circle cx="470" cy="236" r="46" fill="#0b0c0f"/><circle cx="470" cy="236" r="41" fill="none" stroke="#2a2c33" stroke-width="7" stroke-dasharray="9 7"/><circle cx="470" cy="236" r="26" fill="#4a4d55"/><circle cx="470" cy="236" r="9" fill="#17181d"/></g>
+</svg></div><p id="ovd">Tap a number to see what each part does.</p>
+<p class="note">A concept illustration for HashPatrol®, not a vehicle on sale. The drawing is original and the equipment shown is typical of overland builds.</p>
+<h3 style="margin-top:24px">Concept equipment list</h3><div class="grid" id="ovList"></div></div></section>
+<section id="brands"><div class="wrap"><h2>Car brands of the world</h2><p class="sub">Browse automobile brands by country. Tap a brand to see its cars in the guide.</p>
+<input class="srch" id="bq" type="search" placeholder="Search brands, e.g. Hyundai" aria-label="Search brands">
+<div class="chips" id="bchips" role="group" aria-label="Filter brands by country"></div>
+<div class="grid" id="bgrid"></div>
+<p class="note" id="bnote"></p>
+<h3>Open data sources</h3><p class="sub">Free public sources for building the full worldwide database.</p>
+<div class="links"><a href="https://en.wikipedia.org/wiki/List_of_automobile_manufacturers" target="_blank" rel="noopener">Wikipedia: all manufacturers</a><a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vehicle API (US)</a><a href="https://www.fueleconomy.gov/feg/ws/index.shtml" target="_blank" rel="noopener">US fuel economy data</a><a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a><a href="https://www.globalncap.org" target="_blank" rel="noopener">Global NCAP</a><a href="https://www.euroncap.com" target="_blank" rel="noopener">Euro NCAP</a></div></div></section>
+<section id="cars"><div class="wrap"><h2>Car guide: every brand, every model</h2><p class="sub">Search any car, hydrogen model or concept car to see its specs, features, safety, parts layout and history.</p>
+<input class="srch" id="q" type="search" placeholder="Search brand or model, e.g. Mustang, Toyota, SUV" aria-label="Search cars">
+<div class="chips" id="bschips" role="group" aria-label="Filter by body style"></div>
+<div class="chips" id="chips" role="group" aria-label="Filter by brand"></div>
+<div class="enc"><div class="rlist" id="rlist"></div><div><div class="tabs" id="tabs" role="group" aria-label="Car details"></div><div class="panel" id="panel"></div></div></div>
+<p class="note">Only facts that are well established are filled in. Everything marked “Not added yet” needs verified data. A complete worldwide database needs a server that pulls from licensed sources, which this page can’t do on its own.</p></div></section>
+<section id="world"><div class="wrap"><h2>World car model list</h2><p class="sub">Car models from brands in every country, collected from open data. Search by model, brand or country.</p>
+<div class="cmp"><input class="srch" id="wq" type="search" placeholder="Search model or brand" aria-label="Search world car models" style="margin:0"><select id="wc" aria-label="Filter by country"><option>All</option></select></div>
+<p class="note" id="wcount"></p><div class="grid" id="wlist"></div><p class="note" id="wnote"></p></div></section>
+<section id="hydrogen"><div class="wrap"><h2>Hydrogen cars</h2><p class="sub">Fuel-cell cars on sale today and the first big premium one due in 2028, with hydrogen fuel stations worldwide.</p>
+<div class="tw"><table id="h2Table"></table></div>
+<p class="note">Figures are from the reports linked below and are marketing targets or US-market numbers where noted. Official specs differ by country. Sources: <a href="https://theevreport.com/toyota-announces-2026-mirai-fcev-specifications-and-pricing" target="_blank" rel="noopener">Toyota Mirai</a> · <a href="https://www.cars.com/news/fuel-cell/" target="_blank" rel="noopener">Cars.com</a> · <a href="https://www.edmunds.com/car-news/2026-hyundai-nexo-hydrogen-debut-first-look.html" target="_blank" rel="noopener">Edmunds (Nexo)</a> · <a href="https://www.kbb.com/honda/cr-v-efcev/2026/specs" target="_blank" rel="noopener">KBB (CR-V e:FCEV)</a> · <a href="https://www.carsales.com.au/editorial/details/bmw-ix5-hydrogen-targets-750km-range-and-sub-five-second-sprint-153163/" target="_blank" rel="noopener">carsales (BMW)</a></p>
+<div class="card" style="margin-top:18px"><h3>Hydrogen safety</h3><p style="margin:0">The BMW test car stores hydrogen in two carbon-fibre-reinforced tanks rated for 700 bar. Hyundai says the first-generation Nexo’s three tanks sit inside a protection structure that absorbs high-energy impacts. Crash-test star ratings for these cars were not found, so check <a href="https://www.nhtsa.gov/ratings" target="_blank" rel="noopener">NHTSA</a>, <a href="https://www.euroncap.com" target="_blank" rel="noopener">Euro NCAP</a> or <a href="https://www.globalncap.org" target="_blank" rel="noopener">Global NCAP</a>.</p></div>
+<h3 style="margin-top:28px">How a hydrogen car is built</h3><p class="sub">Tap a part to see what it does.</p>
+<div class="tw"><svg id="h2svg" class="xv" viewBox="0 0 600 220" role="group" aria-label="Exploded layout of a hydrogen car" style="min-width:480px;width:100%"></svg></div><p id="h2d">Tap a part to see what it does.</p><p class="note">A generic layout, not the exact parts of one model.</p>
+<h3 style="margin-top:28px">Hydrogen fuel stations</h3><p class="sub">Stations in operation at the end of 2024, the latest full count found.</p>
+<div class="grid" id="h2st"></div>
+<p class="note">Source: H2stations.org (LBST), via TUV SUD. About 125 stations opened in 2024. The true number is uncertain, partly because closures are not always announced.</p>
+<div class="links"><a href="https://www.h2stations.org" target="_blank" rel="noopener">H2stations.org world map</a><a href="https://h2.live" target="_blank" rel="noopener">H2.live (Germany)</a><a href="https://cafcp.org" target="_blank" rel="noopener">California Fuel Cell Partnership</a></div></div></section>
+<section id="daily"><div class="wrap"><h2>Today’s car news</h2><p class="sub">Headlines from open news feeds, refreshed every day. Each card links to the original publisher.</p><div class="chips" id="dreg" role="group" aria-label="Filter headlines by region"></div><p><select id="dday" aria-label="Choose a day" hidden style="max-width:260px"></select></p><div class="grid" id="dgrid"></div><p class="note" id="dnote"></p></div></section>
+<section id="launchwatch"><div class="wrap"><h2>Launch watch</h2><p class="sub">New-car launches and reveals spotted automatically in today’s headlines.</p><div class="grid" id="lwgrid"></div><p class="note" id="lwnote"></p></div></section>
+<section id="news"><div class="wrap"><h2>Latest car news and launches</h2><p class="sub">Latest launches and motor-show news from around the world. Updated 22 Oct 2026.</p>
+<div class="chips" id="nchips" role="group" aria-label="Filter news by region"></div>
+<div class="grid" id="newsGrid"></div>
+<p class="note">Compiled from the published reports linked on each card, written in our own words. Dates and prices can change, so confirm with the manufacturer before you decide. Official specifications and prices are not included until the maker publishes them.</p>
+<h3 style="margin-top:28px">Official media and brochure sites</h3><p class="sub">Press photos, release details and brochures come straight from the makers. Brochure downloads are usually on each model page of the maker’s own country website.</p>
+<div class="links"><a href="https://global.toyota/en/newsroom/" target="_blank" rel="noopener">Toyota</a><a href="https://media.mercedes-benz.com" target="_blank" rel="noopener">Mercedes-Benz</a><a href="https://www.press.bmwgroup.com" target="_blank" rel="noopener">BMW Group</a><a href="https://www.audi-mediacenter.com" target="_blank" rel="noopener">Audi</a><a href="https://www.volkswagen-newsroom.com" target="_blank" rel="noopener">Volkswagen</a><a href="https://newsroom.porsche.com" target="_blank" rel="noopener">Porsche</a><a href="https://media.ford.com" target="_blank" rel="noopener">Ford</a><a href="https://www.media.volvocars.com" target="_blank" rel="noopener">Volvo</a><a href="https://global.honda" target="_blank" rel="noopener">Honda</a><a href="https://global.nissannews.com" target="_blank" rel="noopener">Nissan</a><a href="https://www.hyundai.com" target="_blank" rel="noopener">Hyundai</a><a href="https://www.kia.com" target="_blank" rel="noopener">Kia</a><a href="https://www.tatamotors.com" target="_blank" rel="noopener">Tata Motors</a><a href="https://www.mahindra.com" target="_blank" rel="noopener">Mahindra</a><a href="https://www.marutisuzuki.com" target="_blank" rel="noopener">Maruti Suzuki</a><a href="https://www.byd.com" target="_blank" rel="noopener">BYD</a></div></div></section>
+<section id="racing"><div class="wrap"><h2>Race calendar</h2><p class="sub">Upcoming Formula 1, NASCAR, endurance and off-road races, with official links for tickets and live coverage.</p>
+<div class="card" style="margin-bottom:14px"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><label for="tz" style="font-weight:600">Time zone</label><select id="tz" style="max-width:220px"></select><button class="btn" id="t24" type="button" style="border:0;cursor:pointer;padding:9px 14px"></button><span id="tclock" style="font-weight:800"></span></div><p id="nextrace" style="margin:10px 0 0"></p></div>
+<div class="chips" id="rchips" role="group" aria-label="Filter races by series"></div><div class="grid" id="rgrid"></div>
+<p class="note">Dates are from official calendars and press reports as of 29 Oct 2026. Races can move, so check the organiser before you travel or book. Tickets are sold on each organiser’s own site; HashPatrol® does not sell tickets.</p>
+<h3 style="margin-top:28px">Formula 1 schedule (updates automatically)</h3><div class="grid" id="f1auto"></div><p class="note" id="f1note"></p>
+<h3 style="margin-top:28px">Race tracks</h3><div class="tw"><table id="rtTable"></table></div>
+<p class="note">Lap lengths come from public sources, so check the circuit’s own page. Live lap timing, driver standings and race-car specifications need a data feed and are not on this page yet.</p></div></section>
+<section id="sales"><div class="wrap"><h2>Car sales: month on month and year on year</h2><p class="sub">Latest monthly sales by market, with the change against the previous month and the same month last year.</p>
+<div class="chips" id="schips" role="group" aria-label="Choose a market"></div><div id="sbody"></div>
+<p class="note">Different reports count differently (wholesale dispatches, retail registrations or forecasts), so numbers for the same market can differ. “Not captured” means the source figure was not available to us.</p></div></section>
+<section id="discounts"><div class="wrap"><h2>Car discounts and offers</h2><p class="sub">Current maximum discounts by model, from published offer roundups.</p>
+<div class="chips" id="dchips" role="group" aria-label="Choose a market"></div><div id="dbody"></div>
+<p class="note">Maximum benefits often include cash discounts, exchange or scrappage bonuses, corporate and loyalty offers, and they vary by city, variant, dealer and stock. Confirm the exact offer with your dealer before you buy.</p></div></section>
+<section id="variants"><div class="wrap"><h2>Body styles and variants</h2><p class="sub">Cars are grouped by body style. Tap a style to see matching cars in the guide.</p>
+<div class="grid" id="bsGrid"></div>
+<h3 style="margin-top:28px">What is a car variant?</h3><p style="max-width:70ch">A variant is a specific version of a car model. It sets the combination of engine, fuel type, gearbox, trim level and features, so one model can have many prices. Trim names such as Sigma, Delta, Zeta and Alpha are Maruti Suzuki’s way of ranking variants from basic to fully loaded.</p>
+<h3 style="margin-top:20px">Example: 2026 Maruti Baleno (India, ex-showroom)</h3>
+<div class="tw"><table id="bvTable"></table></div>
+<p class="note">The facelift launched on 5 Sep 2026 and prices range from ₹5.99 lakh to ₹9.99 lakh. Petrol automatic (AMT) versions cost ₹50,000 more than the petrol manual, and CNG costs ₹92,000 more. It uses a 1.2-litre three-cylinder petrol engine with 83 hp and 112 Nm, and the CNG version makes 70 hp and 102 Nm. Claimed economy is 23.80 kpl (manual), 24.77 kpl (AMT) and 33.61 km/kg (CNG). Rivals include the Tata Altroz (₹6 to 10.75 lakh), Hyundai i20 (₹6 to 10.39 lakh) and Toyota Glanza (₹6.73 to 9.99 lakh). Reports differ by a few thousand rupees on some trims, so confirm with a Nexa dealer. Sources: <a href="https://www.autocarindia.com/car-news/2026-maruti-baleno-full-price-list-revealed-440706" target="_blank" rel="noopener">Autocar India</a> · <a href="https://www.91wheels.com/news/new-maruti-baleno-variants-explained" target="_blank" rel="noopener">91wheels</a> · <a href="https://iamabiker.com/avin/2026/2026-maruti-baleno-facelift-price-list-revealed-full-variant-pricing-z12e-engine-specs-and-mileage/" target="_blank" rel="noopener">iamabiker</a></p></div></section>
+<section id="sites"><div class="wrap"><h2>Top websites for car information, specs, prices and RTO</h2><p class="sub">Trusted places to check specs, prices, safety ratings and vehicle registration.</p>
+<h3>India: cars, prices and reviews</h3><div class="links"><a href="https://www.cardekho.com" target="_blank" rel="noopener">CarDekho</a><a href="https://www.carwale.com" target="_blank" rel="noopener">CarWale</a><a href="https://www.autocarindia.com" target="_blank" rel="noopener">Autocar India</a><a href="https://www.zigwheels.com" target="_blank" rel="noopener">ZigWheels</a><a href="https://www.team-bhp.com" target="_blank" rel="noopener">Team-BHP</a></div>
+<h3 style="margin-top:20px">Worldwide: specs, prices and reviews</h3><div class="links"><a href="https://www.edmunds.com" target="_blank" rel="noopener">Edmunds</a><a href="https://www.kbb.com" target="_blank" rel="noopener">Kelley Blue Book</a><a href="https://www.cars.com" target="_blank" rel="noopener">Cars.com</a><a href="https://www.caranddriver.com" target="_blank" rel="noopener">Car and Driver</a><a href="https://www.motor1.com" target="_blank" rel="noopener">Motor1</a><a href="https://www.carwow.co.uk" target="_blank" rel="noopener">carwow</a><a href="https://www.topgear.com" target="_blank" rel="noopener">Top Gear</a><a href="https://www.autocar.co.uk" target="_blank" rel="noopener">Autocar UK</a><a href="https://www.whatcar.com" target="_blank" rel="noopener">What Car?</a></div>
+<h3 style="margin-top:20px">Safety ratings</h3><div class="links"><a href="https://www.globalncap.org" target="_blank" rel="noopener">Global NCAP</a><a href="https://www.euroncap.com" target="_blank" rel="noopener">Euro NCAP</a><a href="https://www.nhtsa.gov/ratings" target="_blank" rel="noopener">NHTSA (USA)</a></div>
+<h3 style="margin-top:20px">RTO and vehicle registration (official)</h3><div class="links"><a href="https://parivahan.gov.in" target="_blank" rel="noopener">Parivahan (India)</a><a href="https://www.gov.uk/government/organisations/driver-and-vehicle-licensing-agency" target="_blank" rel="noopener">DVLA (UK)</a><a href="https://www.dmv.ca.gov" target="_blank" rel="noopener">California DMV</a></div>
+<p class="note">Links open each site in a new tab. We are not affiliated with them.</p></div></section>
+<section id="launches"><div class="wrap"><h2>New car launches</h2><p class="sub">Dates, expected prices and key specs for upcoming cars.</p><div class="grid" id="launchGrid"></div><p class="note">Sample entries. Replace them with verified data from manufacturers before publishing.</p></div></section>
+<section id="spy"><div class="wrap"><h2>Spy shots</h2><p class="sub">Test mules caught on the road, with what we can tell from them.</p><div class="grid" id="spyGrid"></div></div></section>
+<section id="compare"><div class="wrap"><h2>Car vs car</h2><p class="sub">Pick two cars and compare them side by side.</p><div class="cmp"><select id="selA" aria-label="First car"></select><select id="selB" aria-label="Second car"></select></div><div class="tw"><table id="cmpTable"></table></div></div></section>
+<section id="shows"><div class="wrap"><h2>Autoshows</h2><p class="sub">Dates and venues for upcoming motor shows.</p><div class="grid" id="showGrid"></div></div></section>
+<section id="infrastructure"><div class="wrap"><h2>Service centers and infrastructure</h2><p class="sub">EV charging, fuel stations, car wash, workshops and authorized service centers.</p>
+<div class="chips" id="infocfg" role="group" aria-label="Filter by type"><button data-target="all" aria-pressed="true">All</button><button data-target="charging" aria-pressed="false">EV charging</button><button data-target="fuel" aria-pressed="false">Fuel and CNG</button><button data-target="wash" aria-pressed="false">Car wash</button><button data-target="workshop" aria-pressed="false">Workshops</button><button data-target="brandsc" aria-pressed="false">Brand service</button></div>
+<div class="grid" id="infraGrid"></div>
+<p class="note">These are example listings. Each button opens a live Google Maps search near you.</p>
+<h3 style="margin-top:28px">Search near you</h3>
+<div class="btns"><a class="btn alt" href="https://www.google.com/maps/search/car+service+center+near+me" target="_blank" rel="noopener">Find service centers near me</a><a class="btn" href="https://www.google.com/maps/search/car+workshop+near+me" target="_blank" rel="noopener">Find workshops near me</a></div>
+<p class="note">Opens Google Maps with your location.</p></div></section>
+</main>
+<footer><div class="wrap"><span>HashPatrol® is a registered brand. All rights reserved.</span><span><a href="https://www.instagram.com/hashpatrol" target="_blank" rel="noopener">Advertise with us</a> · <a href="https://www.instagram.com/hashpatrol" target="_blank" rel="noopener">Instagram @hashpatrol</a></span></div></footer>
+
+<script>
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+/* wheels */
+function wheel(cx,cy,r,knobs){var sp="",i;for(i=0;i<10;i++){var a=i*36*Math.PI/180;sp+='<line x1="0" y1="0" x2="'+(r*.62*Math.cos(a)).toFixed(1)+'" y2="'+(r*.62*Math.sin(a)).toFixed(1)+'" stroke="#d5d8de" stroke-width="'+(r*.07).toFixed(1)+'"/>'}
+var kn=knobs?'<circle r="'+(r-3)+'" fill="none" stroke="#2b2c31" stroke-width="7" stroke-dasharray="9 7"/>':"";
+return '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*1.14)+'" fill="#0c0d10"/><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#17181c"/><g class="sp" transform="translate('+cx+' '+cy+')">'+kn+'<circle r="'+(r*.66)+'" fill="#3a3d45"/>'+sp+'<circle r="'+(r*.66)+'" fill="none" stroke="#aeb2ba" stroke-width="3"/><circle r="'+(r*.16)+'" fill="#f2c200"/></g>'}
+$("w0").innerHTML=wheel(130,150,35,false)+wheel(478,150,35,false);
+$("w1").innerHTML=wheel(138,184,46,true)+wheel(470,184,46,true);
+/* scroll animation */
+var sc=$("scroll"),info=[
+{n:"Sample racing coupe",p:"Price TBA",e:["V8 twin-turbo","TBA","TBA","Dual-clutch"]},
+{n:"Sample 4x4 off-roader",p:"Price TBA",e:["V6 diesel","TBA","TBA","8-speed auto"]}];
+var calm=matchMedia("(prefers-reduced-motion:reduce)").matches,cur=-1,dots=document.querySelectorAll(".dots i");
+function clamp(v){return Math.max(0,Math.min(1,v))}
+function upd(){var r=sc.getBoundingClientRect(),p=clamp(-r.top/(sc.offsetHeight-innerHeight)),k=p<.5?0:1,q=k?(p-.5)*2:p*2;
+var x=q<.3?-(1-q/.3)*75:(q>.78?(q-.78)/.22*75:0);if(calm)x=0;
+for(var s=0;s<2;s++){var on=s===k;$("s"+s).className="scene"+(on?" on":"");
+if(on){$("c"+s).style.transform="translateX("+x+"vw)";
+var w=document.querySelectorAll("#w"+s+" .sp");for(var i=0;i<w.length;i++)w[i].style.transform="translate("+w[i].getAttribute("transform").match(/translate\(([^)]+)\)/)[1].split(" ").map(function(v){return v+"px"}).join(",")+") rotate("+(q*2600)+"deg)";
+$("f"+s).style.transform="translateX("+(-q*60)+"vw)";$("m"+s).style.transform="translateX("+(-q*140)+"vw)";
+$("l"+s).style.backgroundPositionX=(-q*2400)+"px";if(s===0)$("sp0").style.backgroundPositionY=(q*300)+"px"}}
+if(k!==cur){cur=k;var d=info[k];$("nm").textContent=d.n;$("pr").textContent=d.p;for(var j=0;j<4;j++)$("e"+(j+1)).textContent=d.e[j];dots[0].className=k?"":"on";dots[1].className=k?"on":""}}
+/* old scene driver disabled */
+/* car guide */
+var BR={"Ford":"Ford Motor Company was founded in 1903 in the USA. The Model T of 1908 helped make cars affordable worldwide.","Toyota":"Toyota Motor Corporation was established in 1937 in Japan, spun out of a loom-making company.","Volkswagen":"Volkswagen was founded in 1937 in Germany; the Beetle became its defining model.","Honda":"Honda Motor Co. was founded in 1948 in Japan and is also a major motorcycle maker.","Porsche":"Porsche built its first car under its own name in 1948 in Austria and later moved to Stuttgart, Germany.","Tesla":"Tesla was founded in 2003 in the USA and helped make electric cars mainstream.","Land Rover":"Land Rover started in 1948 in the UK with a rugged utility 4x4.","Jeep":"Jeep traces back to the 1941 Willys military vehicle in the USA.","BMW":"BMW was founded in 1916 in Germany, first as an aircraft-engine maker.","Maruti Suzuki":"Maruti Udyog was set up in 1981 in India and later became Maruti Suzuki.","Mahindra":"Mahindra began in 1945 in India and is known for utility vehicles and SUVs.","Tata":"Tata Motors began car and truck production in India in the 1940s.","Hyundai":"Hyundai Motor Company was founded in 1967 in South Korea.","Nissan":"Nissan was founded in 1933 in Japan.","Chevrolet":"Chevrolet was founded in 1911 in the USA and is part of General Motors.","Mercedes-Benz":"Mercedes-Benz traces back to Karl Benz’s 1886 car and the 1926 merger of Benz & Cie and Daimler.","Ferrari":"Ferrari built its first car in 1947 in Italy.","Lamborghini":"Lamborghini was founded in 1963 in Italy.","Mini":"Mini began as a model of the British Motor Corporation in 1959 and is now a BMW-owned brand.","Hindustan Motors":"Hindustan Motors was founded in 1942 in India.","Kia":"Kia was founded in 1944 in South Korea.","Audi":"Audi was founded in 1909 in Germany by August Horch.","Volvo":"Volvo Cars was founded in 1927 in Sweden and introduced the modern three-point seat belt in 1959.","Rolls-Royce":"Rolls-Royce was founded in 1906 in the UK by Charles Rolls and Henry Royce.","Bugatti":"Bugatti was founded in 1909 in Molsheim, France, by Ettore Bugatti.","Aston Martin":"Aston Martin was founded in 1913 in London, UK.","McLaren":"McLaren was founded in 1963 by Bruce McLaren in the UK and is known for racing and supercars.","Mazda":"Mazda was founded in 1920 in Japan.","Suzuki":"Suzuki was founded in 1909 in Japan.","Renault":"Renault was founded in 1899 in France.","Citroën":"Citroën was founded in 1919 in France.","Fiat":"Fiat was founded in 1899 in Turin, Italy.","Lotus":"Lotus was founded in 1952 in the UK by Colin Chapman.","Lexus":"Lexus was launched in 1989 by Toyota in Japan as its luxury brand.","Subaru":"Subaru was founded in 1953 in Japan and is known for all-wheel drive and boxer engines.","Mitsubishi":"Mitsubishi Motors was founded in 1970 in Japan.","Dodge":"Dodge began in 1900 as a machine shop and started building cars in 1914 in the USA.","Rivian":"Rivian was founded in 2009 in the USA and builds electric trucks and SUVs.","Alfa Romeo":"Alfa Romeo was founded in 1910 in Milan, Italy.","Lancia":"Lancia was founded in 1906 in Turin, Italy.","Pagani":"Pagani Automobili was founded in 1992 in Italy by Horacio Pagani and builds hand-made hypercars.","Jaguar":"Jaguar began in 1922 in the UK as the Swallow Sidecar Company and took the Jaguar name in 1945.","Bentley":"Bentley was founded in 1919 in the UK by W. O. Bentley.","MG":"MG began in 1924 in Oxford, UK, known for affordable sports cars.","Peugeot":"Peugeot’s industrial roots go back to 1810 in France, and it built its first cars in the 1890s.","Polestar":"Polestar became a standalone electric-car brand in 2017 in Sweden, linked to Volvo and Geely.","BYD":"BYD was founded in 1995 in China and is a major maker of electric vehicles.","NIO":"NIO was founded in 2014 in China and builds premium electric cars.","Škoda":"Škoda traces back to 1895 in the Czech lands as Laurin & Klement.","Dacia":"Dacia was founded in 1966 in Romania and is known for affordable cars.","SEAT":"SEAT was founded in 1950 in Spain.","Proton":"Proton was founded in 1983 in Malaysia as the country’s national car maker.","Lada":"Lada, from AvtoVAZ, began car production in 1970 in Russia.","Isuzu":"Isuzu traces its roots to 1916 in Japan and is known for diesel engines and pickups.","Lucid":"Lucid was founded in 2007 in the USA, originally as Atieva, and builds luxury electric cars.","UAZ":"UAZ began in 1941 in Ulyanovsk, Russia, and is known for rugged 4x4 vehicles.","DeLorean":"DeLorean Motor Company was founded in 1975 in the USA by John DeLorean.","Maserati":"Maserati was founded in 1914 in Bologna, Italy.","Genesis":"Genesis became Hyundai’s luxury brand in 2015 in South Korea.","Koenigsegg":"Koenigsegg was founded in 1994 in Sweden by Christian von Koenigsegg.","Zeekr":"Zeekr is Geely’s premium electric brand, launched in 2021 in China.","Great Wall":"Great Wall Motor was founded in 1984 in China and builds SUVs and pickups under brands such as Haval and Tank.","Xpeng":"XPeng was founded in 2014 in China and builds smart electric cars.","Li Auto":"Li Auto was founded in 2015 in China and builds extended-range electric SUVs.","Xiaomi Auto":"Xiaomi announced its electric-car business in 2021 and launched its first car, the SU7, in 2024.","Denza":"Denza was launched in 2010 as a BYD and Daimler joint venture in China and is now BYD’s premium brand.","Togg":"Togg was founded in 2018 in Turkey as the country’s domestic electric-car maker.","Iran Khodro":"Iran Khodro was founded in 1962 in Iran and is one of the Middle East’s largest car makers.","Aurus":"Aurus is a Russian luxury car brand set up in 2018, known for the Senat limousine.","Cadillac":"Cadillac was founded in 1902 in the USA and is General Motors’ luxury brand.","Alpine":"Alpine was founded in 1955 in France by Jean Rédélé and is known for lightweight sports cars.","Smart":"Smart is a small-car brand started in 1994 as a Mercedes-Benz and Swatch venture.","Opel":"Opel built its first cars in 1899 in Germany and joined PSA, now Stellantis, in 2017."};
+var GC=[
+{b:"Ford",n:"Mustang",y:"1964",body:"Coupe / convertible",pt:"ice",h:"Launched in April 1964 and created the ‘pony car’ class: sporty, affordable coupes."},
+{b:"Toyota",n:"Corolla",y:"1966",body:"Sedan / hatchback",pt:"ice",h:"Introduced in 1966 and became one of the best-selling car nameplates ever."},
+{b:"Volkswagen",n:"Beetle (original)",y:"1938",body:"Compact car",pt:"ice",h:"Built from 1938 to 2003 with a rear-mounted air-cooled engine; more than 21 million were made."},
+{b:"Honda",n:"Civic",y:"1972",body:"Hatchback / sedan",pt:"ice",h:"Launched in 1972 and helped Honda gain a global car customer base."},
+{b:"Porsche",n:"911",y:"1964",body:"Sports coupe",pt:"ice",h:"Introduced in 1964 with a rear-mounted flat-six layout and still built today."},
+{b:"Tesla",n:"Model S",y:"2012",body:"Electric liftback",pt:"ev",h:"Deliveries began in 2012 and showed that long-range electric cars could be desirable."},
+{b:"Land Rover",n:"Defender",y:"1948",body:"Off-road SUV",pt:"ice",h:"The original Land Rover appeared in 1948, was named Defender in 1990, ended in 2016 and was relaunched in 2020."},
+{b:"Jeep",n:"Wrangler",y:"1986",body:"Off-road SUV",pt:"ice",h:"The Wrangler name began in 1986 and descends from the 1941 Willys military Jeep."},
+{b:"BMW",n:"3 Series",y:"1975",body:"Sedan",pt:"ice",h:"Introduced in 1975 and defined the compact sports sedan segment."},
+{b:"Maruti Suzuki",n:"Maruti 800",y:"1983",body:"Hatchback",pt:"ice",h:"Launched in December 1983 and put many Indian families into their first car."},
+{b:"Mahindra",n:"Thar",y:"2010",body:"Off-road SUV",pt:"ice",h:"First launched in 2010 and redesigned as an all-new second generation in 2020."},
+{b:"Tata",n:"Nano",y:"2008",body:"City car",pt:"ice",h:"Unveiled in 2008 as an ultra-low-cost small car for India; production ended around 2018-19."},
+{b:"Maruti Suzuki",n:"Swift",y:"2005",body:"Hatchback",pt:"ice",h:"Launched in India in 2005 and became one of the country’s most popular hatchbacks."},
+{b:"Hyundai",n:"Creta",y:"2015",body:"Compact SUV",pt:"ice",h:"Launched in India in 2015 and quickly became a top-selling compact SUV."},
+{b:"Tata",n:"Safari",y:"1998",body:"SUV",pt:"ice",h:"Launched in 1998 as an early home-grown Indian SUV."},
+{b:"Tata",n:"Nexon",y:"2017",body:"Compact SUV",pt:"ice",h:"Launched in India in 2017 and later also offered as an electric version."},
+{b:"Mahindra",n:"Scorpio",y:"2002",body:"SUV",pt:"ice",h:"Launched in 2002 as Mahindra’s first SUV designed and built in-house."},
+{b:"Toyota",n:"Innova",y:"2005",body:"MPV",pt:"ice",h:"Introduced in India in 2005, replacing the Qualis, and known for family and fleet use."},
+{b:"Hindustan Motors",n:"Ambassador",y:"1958",body:"Sedan",pt:"ice",h:"Based on the British Morris Oxford III; production in India ended in 2014."},
+{b:"Toyota",n:"Land Cruiser",y:"1951",body:"Off-road SUV",pt:"ice",h:"Its origins go back to 1951, and the Land Cruiser name has been used since 1954."},
+{b:"Toyota",n:"Prius",y:"1997",body:"Hybrid sedan / hatchback",pt:"ice",h:"Launched in Japan in 1997 as the first mass-produced hybrid car."},
+{b:"Nissan",n:"Leaf",y:"2010",body:"Electric hatchback",pt:"ev",h:"Launched in late 2010 as one of the first mass-market electric cars."},
+{b:"Nissan",n:"GT-R (R35)",y:"2007",body:"Sports coupe",pt:"ice",h:"The R35 GT-R launched in 2007 with all-wheel drive and a twin-turbo V6."},
+{b:"Ford",n:"Model T",y:"1908",body:"Early mass-market car",pt:"ice",h:"Built from 1908 to 1927 using a moving assembly line, which made cars far cheaper."},
+{b:"Mercedes-Benz",n:"Benz Patent-Motorwagen",y:"1886",body:"Three-wheeler",pt:"ice",h:"Patented by Karl Benz in 1886 and widely regarded as the first practical petrol-engined car."},
+{b:"Chevrolet",n:"Corvette",y:"1953",body:"Sports car",pt:"ice",h:"America’s sports car since 1953; the first model was a fibreglass-bodied roadster."},
+{b:"Mini",n:"Classic Mini",y:"1959",body:"Small car",pt:"ice",h:"Launched in 1959 with a transverse engine and front-wheel drive that maximised cabin space."},
+{b:"Ferrari",n:"250 GTO",y:"1962",body:"Racing GT coupe",pt:"ice",h:"Built from 1962 to 1964 in very small numbers and now one of the most valuable collector cars."},
+{b:"Lamborghini",n:"Countach",y:"1974",body:"Supercar",pt:"ice",h:"Production began in 1974 after a 1971 prototype, with a wedge shape and scissor doors."},
+{b:"Toyota",n:"Camry",y:"1982",body:"Sedan",pt:"ice",h:"Introduced in 1982 and became a long-running family sedan sold around the world."},
+{b:"Toyota",n:"Fortuner",y:"2005",body:"SUV",pt:"ice",h:"Introduced in 2005 on a pickup-truck platform and launched in India in 2009."},
+{b:"Toyota",n:"Hilux",y:"1968",body:"Pickup truck",pt:"ice",h:"Introduced in 1968 and known worldwide for toughness and reliability."},
+{b:"Honda",n:"Accord",y:"1976",body:"Sedan",pt:"ice",h:"Launched in 1976 as a compact car and grew into a mid-size family sedan."},
+{b:"Honda",n:"City",y:"1981",body:"Sedan",pt:"ice",h:"Introduced in Japan in 1981 and launched in India in 1998."},
+{b:"Honda",n:"CR-V",y:"1995",body:"SUV",pt:"ice",h:"Launched in 1995 and helped popularise the compact SUV."},
+{b:"Hyundai",n:"Santro",y:"1998",body:"Hatchback",pt:"ice",h:"Launched in India in 1998 and marked Hyundai’s entry into the Indian car market."},
+{b:"Hyundai",n:"i20",y:"2008",body:"Hatchback",pt:"ice",h:"Launched in India in 2008 as a premium hatchback."},
+{b:"Hyundai",n:"Venue",y:"2019",body:"Compact SUV",pt:"ice",h:"Launched in India in 2019 as a connected compact SUV."},
+{b:"Kia",n:"Seltos",y:"2019",body:"Compact SUV",pt:"ice",h:"Launched in India in 2019 and was Kia’s first car in the country."},
+{b:"Maruti Suzuki",n:"Alto",y:"2000",body:"Hatchback",pt:"ice",h:"Launched in 2000 and went on to be among India’s best-selling cars."},
+{b:"Maruti Suzuki",n:"Wagon R",y:"1999",body:"Hatchback",pt:"ice",h:"Launched in India in 1999 with a tall-boy design for roomy seating."},
+{b:"Maruti Suzuki",n:"Dzire",y:"2008",body:"Compact sedan",pt:"ice",h:"Launched in 2008 as a compact sedan based on the Swift."},
+{b:"Maruti Suzuki",n:"Baleno",y:"2015",body:"Hatchback",pt:"ice",h:"Launched in India in 2015 as a premium hatchback."},
+{b:"Maruti Suzuki",n:"Brezza",y:"2016",body:"Compact SUV",pt:"ice",h:"Launched in 2016 as the Vitara Brezza and later renamed Brezza."},
+{b:"Maruti Suzuki",n:"Ertiga",y:"2012",body:"MPV",pt:"ice",h:"Launched in 2012 as a seven-seater family car."},
+{b:"Maruti Suzuki",n:"Gypsy",y:"1985",body:"Off-road SUV",pt:"ice",h:"Launched in 1985 as a light 4x4 widely used by Indian police and armed forces."},
+{b:"Suzuki",n:"Jimny",y:"1970",body:"Off-road SUV",pt:"ice",h:"The first Jimny appeared in 1970 as a small, capable 4x4."},
+{b:"Mahindra",n:"Bolero",y:"2000",body:"SUV",pt:"ice",h:"Launched in 2000 and popular in rural and small-town India for durability."},
+{b:"Mahindra",n:"XUV500",y:"2011",body:"SUV",pt:"ice",h:"Launched in 2011 and was Mahindra’s first monocoque-bodied SUV."},
+{b:"Mahindra",n:"XUV700",y:"2021",body:"SUV",pt:"ice",h:"Launched in 2021 as the successor to the XUV500."},
+{b:"Tata",n:"Sumo",y:"1994",body:"Utility vehicle",pt:"ice",h:"Launched in 1994 as a multi-purpose utility vehicle."},
+{b:"Tata",n:"Indica",y:"1998",body:"Hatchback",pt:"ice",h:"Launched in 1998 as India’s first fully indigenously designed passenger car."},
+{b:"Tata",n:"Harrier",y:"2019",body:"SUV",pt:"ice",h:"Launched in India in 2019 as a flagship SUV."},
+{b:"Tata",n:"Punch",y:"2021",body:"Micro SUV",pt:"ice",h:"Launched in India in 2021 and became a popular small SUV."},
+{b:"Renault",n:"Kwid",y:"2015",body:"Hatchback",pt:"ice",h:"Launched in India in 2015 as a small, SUV-styled hatchback."},
+{b:"Volkswagen",n:"Golf",y:"1974",body:"Hatchback",pt:"ice",h:"Launched in 1974 as a front-wheel-drive successor to the Beetle."},
+{b:"BMW",n:"M3",y:"1986",body:"Sports sedan / coupe",pt:"ice",h:"The first M3 appeared in 1986 as a road-going version of a touring-car racer."},
+{b:"BMW",n:"X5",y:"1999",body:"SUV",pt:"ice",h:"Launched in 1999 and BMW called it a Sports Activity Vehicle."},
+{b:"Mercedes-Benz",n:"300 SL Gullwing",y:"1954",body:"Sports coupe",pt:"ice",h:"Introduced in 1954 with upward-opening gullwing doors and fuel injection."},
+{b:"Mercedes-Benz",n:"G-Class",y:"1979",body:"Off-road SUV",pt:"ice",h:"Launched in 1979 as a military-grade off-roader and still built with its boxy shape."},
+{b:"Audi",n:"Quattro",y:"1980",body:"Coupe",pt:"ice",h:"Introduced in 1980 and brought permanent all-wheel drive to performance cars and rallying."},
+{b:"Audi",n:"R8",y:"2006",body:"Sports car",pt:"ice",h:"Launched in 2006 as Audi’s first mid-engined supercar."},
+{b:"Volvo",n:"XC90",y:"2002",body:"SUV",pt:"ice",h:"Launched in 2002 and became Volvo’s flagship family SUV."},
+{b:"Porsche",n:"356",y:"1948",body:"Sports car",pt:"ice",h:"The first car sold under the Porsche name, from 1948."},
+{b:"Porsche",n:"Cayenne",y:"2002",body:"SUV",pt:"ice",h:"Launched in 2002 as Porsche’s first SUV."},
+{b:"Ferrari",n:"F40",y:"1987",body:"Supercar",pt:"ice",h:"Unveiled in 1987 to mark Ferrari’s 40th anniversary."},
+{b:"Lamborghini",n:"Miura",y:"1966",body:"Supercar",pt:"ice",h:"Unveiled in 1966 with a mid-mounted engine and is often called the first supercar."},
+{b:"Aston Martin",n:"DB5",y:"1963",body:"Grand tourer",pt:"ice",h:"Launched in 1963 and made famous by the James Bond films."},
+{b:"McLaren",n:"F1",y:"1992",body:"Supercar",pt:"ice",h:"Unveiled in 1992 as a road car with a central driving position."},
+{b:"Bugatti",n:"Veyron",y:"2005",body:"Hypercar",pt:"ice",h:"Entered production in 2005 and was a headline-grabbing high-speed hypercar."},
+{b:"Rolls-Royce",n:"Silver Ghost",y:"1906",body:"Luxury car",pt:"ice",h:"Introduced in 1906 and gained a reputation for smoothness and reliability."},
+{b:"Land Rover",n:"Range Rover",y:"1970",body:"Luxury SUV",pt:"ice",h:"Launched in 1970 and combined off-road ability with on-road comfort."},
+{b:"Mazda",n:"MX-5 Miata",y:"1989",body:"Roadster",pt:"ice",h:"Launched in 1989 as a light two-seat roadster and became hugely popular."},
+{b:"Lotus",n:"Elise",y:"1996",body:"Sports car",pt:"ice",h:"Launched in 1996 and used a light bonded-aluminium chassis."},
+{b:"Chevrolet",n:"Camaro",y:"1966",body:"Coupe",pt:"ice",h:"Introduced in 1966 as Chevrolet’s answer to the Mustang."},
+{b:"Ford",n:"F-Series",y:"1948",body:"Pickup truck",pt:"ice",h:"Introduced in 1948 and has been a best-selling truck line in the USA for decades."},
+{b:"Fiat",n:"500 (Nuova)",y:"1957",body:"City car",pt:"ice",h:"Launched in 1957 as a tiny, affordable city car for post-war Italy."},
+{b:"Citroën",n:"2CV",y:"1948",body:"Small car",pt:"ice",h:"Unveiled in 1948 as a simple, economical car for rural drivers."},
+{b:"Tesla",n:"Roadster (first)",y:"2008",body:"Electric sports car",pt:"ev",h:"Deliveries began in 2008 and showed that electric cars could be quick and exciting."},
+{b:"Tesla",n:"Model 3",y:"2017",body:"Electric sedan",pt:"ev",h:"Deliveries began in 2017 as Tesla’s lower-priced, high-volume car."},
+{b:"Toyota",n:"Crown",y:"1955",body:"Sedan",pt:"ice",h:"The first Crown appeared in 1955 as one of Japan’s earliest domestically designed passenger cars."},
+{b:"Toyota",n:"2000GT",y:"1967",body:"Sports coupe",pt:"ice",h:"Launched in 1967 and showed that Japan could build a world-class sports car."},
+{b:"Toyota",n:"Supra",y:"1978",body:"Sports coupe",pt:"ice",h:"Began in 1978 as the Celica Supra and became its own model line in the 1980s."},
+{b:"Lexus",n:"LS 400",y:"1989",body:"Luxury sedan",pt:"ice",h:"Launched in 1989 as the first Lexus and challenged established luxury brands on quality."},
+{b:"Nissan",n:"Skyline GT-R (Hakosuka)",y:"1969",body:"Sports sedan",pt:"ice",h:"The first Skyline GT-R appeared in 1969 and began a long racing and performance line."},
+{b:"Nissan",n:"Datsun 240Z",y:"1969",body:"Sports coupe",pt:"ice",h:"Launched in 1969 as an affordable sports coupe that was a big hit in the USA."},
+{b:"Honda",n:"NSX",y:"1990",body:"Sports car",pt:"ice",h:"Launched in 1990 as an everyday-usable mid-engined supercar with an aluminium body."},
+{b:"Honda",n:"S2000",y:"1999",body:"Roadster",pt:"ice",h:"Launched in 1999 to mark Honda’s 50th anniversary, known for a high-revving engine."},
+{b:"Mazda",n:"RX-7",y:"1978",body:"Sports coupe",pt:"ice",h:"Launched in 1978 with a rotary engine."},
+{b:"Subaru",n:"Impreza WRX",y:"1992",body:"Sports sedan",pt:"ice",h:"Introduced in 1992 and became famous in rallying."},
+{b:"Mitsubishi",n:"Lancer Evolution",y:"1992",body:"Sports sedan",pt:"ice",h:"The first Evolution appeared in 1992 and became a rally-bred road car line."},
+{b:"Hyundai",n:"Pony",y:"1975",body:"Hatchback",pt:"ice",h:"Launched in 1975 as South Korea’s first mass-produced car designed for export."},
+{b:"Hyundai",n:"Ioniq 5",y:"2021",body:"Electric crossover",pt:"ev",h:"Launched in 2021 on Hyundai’s dedicated electric platform."},
+{b:"Kia",n:"EV6",y:"2021",body:"Electric crossover",pt:"ev",h:"Launched in 2021 as Kia’s first dedicated electric vehicle."},
+{b:"Mercedes-Benz",n:"S-Class",y:"1972",body:"Luxury sedan",pt:"ice",h:"The S-Class name began in 1972 and the line has often introduced new safety and comfort technology."},
+{b:"BMW",n:"2002",y:"1968",body:"Sports sedan",pt:"ice",h:"Introduced in 1968 and helped create BMW’s sporty-sedan image."},
+{b:"BMW",n:"i3",y:"2013",body:"Electric city car",pt:"ev",h:"Launched in 2013 with a carbon-fibre-reinforced passenger cell."},
+{b:"Volkswagen",n:"Passat",y:"1973",body:"Sedan / estate",pt:"ice",h:"Introduced in 1973 as a front-wheel-drive family car."},
+{b:"Porsche",n:"Taycan",y:"2019",body:"Electric sports sedan",pt:"ev",h:"Revealed in 2019 as Porsche’s first fully electric production car."},
+{b:"Dodge",n:"Charger",y:"1966",body:"Muscle car",pt:"ice",h:"Introduced in 1966 and became an American muscle-car icon."},
+{b:"Ford",n:"Bronco",y:"1966",body:"Off-road SUV",pt:"ice",h:"The first Bronco appeared in 1966 as a compact off-roader and was relaunched in 2020."},
+{b:"Ford",n:"GT40",y:"1964",body:"Racing car",pt:"ice",h:"Introduced in 1964 and won the 24 Hours of Le Mans from 1966 to 1969."},
+{b:"Chevrolet",n:"Impala",y:"1958",body:"Sedan",pt:"ice",h:"Introduced in 1958 and became one of America’s best-selling full-size cars."},
+{b:"Tesla",n:"Cybertruck",y:"2023",body:"Electric pickup",pt:"ev",h:"Deliveries began in late 2023 with an angular stainless-steel body."},
+{b:"Rivian",n:"R1T",y:"2021",body:"Electric pickup",pt:"ev",h:"Deliveries began in 2021 as one of the first mass-produced electric pickups."},
+{b:"Alfa Romeo",n:"Spider (Duetto)",y:"1966",body:"Roadster",pt:"ice",h:"Launched in 1966 and featured in the film The Graduate."},
+{b:"Lancia",n:"Stratos",y:"1973",body:"Rally car",pt:"ice",h:"Introduced in 1973 as a car designed specifically for rallying."},
+{b:"Pagani",n:"Zonda",y:"1999",body:"Hypercar",pt:"ice",h:"Unveiled in 1999 as Pagani’s first car, with a Mercedes-AMG engine."},
+{b:"Pagani",n:"Zonda R",y:"2009",body:"Track hypercar",pt:"ice",h:"Unveiled in 2009 as a track-only version of the Zonda."},
+{b:"Pagani",n:"Huayra",y:"2011",body:"Hypercar",pt:"ice",h:"Unveiled in 2011 as the successor to the Zonda."},
+{b:"Jaguar",n:"E-Type",y:"1961",body:"Sports car",pt:"ice",h:"Launched in 1961 and widely admired for its beauty and performance."},
+{b:"Bentley",n:"Continental GT",y:"2003",body:"Grand tourer",pt:"ice",h:"Launched in 2003 and helped revive Bentley under Volkswagen Group ownership."},
+{b:"MG",n:"MGB",y:"1962",body:"Roadster",pt:"ice",h:"Launched in 1962 and became one of the best-selling British sports cars."},
+{b:"Land Rover",n:"Discovery",y:"1989",body:"SUV",pt:"ice",h:"Launched in 1989 as a seven-seat family SUV with off-road ability."},
+{b:"Peugeot",n:"205",y:"1983",body:"Hatchback",pt:"ice",h:"Launched in 1983 and helped Peugeot recover in the 1980s."},
+{b:"Renault",n:"5",y:"1972",body:"Hatchback",pt:"ice",h:"Launched in 1972 as a small, stylish hatchback and relaunched as an electric car."},
+{b:"Citroën",n:"DS",y:"1955",body:"Executive car",pt:"ice",h:"Unveiled in 1955 with advanced hydropneumatic suspension."},
+{b:"Bugatti",n:"Type 35",y:"1924",body:"Racing car",pt:"ice",h:"Introduced in 1924 and won many races in the 1920s."},
+{b:"Volvo",n:"Amazon",y:"1956",body:"Sedan / estate",pt:"ice",h:"Introduced in 1956 and was among the first production cars with standard three-point seat belts from 1959."},
+{b:"Polestar",n:"2",y:"2019",body:"Electric fastback",pt:"ev",h:"Revealed in 2019 as Polestar’s first fully electric car."},
+{b:"BYD",n:"Seal",y:"2022",body:"Electric sedan",pt:"ev",h:"Launched in 2022 as a rival to the Tesla Model 3."},
+{b:"NIO",n:"ES8",y:"2018",body:"Electric SUV",pt:"ev",h:"Deliveries began in 2018 as NIO’s first production vehicle."},
+{b:"Škoda",n:"Octavia",y:"1959",body:"Sedan / hatchback",pt:"ice",h:"The first Octavia appeared in 1959 and the name was revived in 1996."},
+{b:"Dacia",n:"Logan",y:"2004",body:"Sedan",pt:"ice",h:"Launched in 2004 as an ultra-affordable car for emerging markets."},
+{b:"Dacia",n:"Duster",y:"2010",body:"Compact SUV",pt:"ice",h:"Launched in 2010 as a low-cost compact SUV."},
+{b:"SEAT",n:"600",y:"1957",body:"City car",pt:"ice",h:"Launched in 1957 and put many Spanish families on the road."},
+{b:"Proton",n:"Saga",y:"1985",body:"Sedan",pt:"ice",h:"Launched in 1985 as Malaysia’s first national car."},
+{b:"Lada",n:"Niva",y:"1977",body:"Off-road SUV",pt:"ice",h:"Launched in 1977 as a compact 4x4 with a monocoque body."},
+{b:"Toyota",n:"RAV4",y:"1994",body:"SUV",pt:"ice",h:"Introduced in 1994 and helped create the compact crossover segment."},
+{b:"Toyota",n:"Hiace",y:"1967",body:"Van",pt:"ice",h:"Introduced in 1967 and widely used as a van and minibus around the world."},
+{b:"Toyota",n:"Tundra",y:"1999",body:"Pickup truck",pt:"ice",h:"Introduced in 1999 as Toyota’s full-size pickup for the USA."},
+{b:"Toyota",n:"Land Cruiser Prado",y:"1990",body:"SUV",pt:"ice",h:"The Prado name began in 1990 for a lighter, more car-like Land Cruiser."},
+{b:"Honda",n:"Jazz (Fit)",y:"2001",body:"Hatchback",pt:"ice",h:"Launched in 2001 with a flexible interior and sold as the Fit or Jazz."},
+{b:"Honda",n:"Civic Type R",y:"1997",body:"Hot hatch",pt:"ice",h:"The first Type R arrived in 1997 as a track-focused Civic."},
+{b:"Nissan",n:"Qashqai",y:"2006",body:"Crossover",pt:"ice",h:"Launched in 2006 and popularised the compact crossover in Europe."},
+{b:"Nissan",n:"Patrol",y:"1951",body:"Off-road SUV",pt:"ice",h:"The Patrol name has been used since 1951 for Nissan’s large 4x4."},
+{b:"Mazda",n:"CX-5",y:"2012",body:"Compact SUV",pt:"ice",h:"Launched in 2012 and became Mazda’s best-selling model."},
+{b:"Mazda",n:"Mazda3",y:"2003",body:"Hatchback / sedan",pt:"ice",h:"Launched in 2003 as a replacement for the 323 and Familia."},
+{b:"Subaru",n:"Forester",y:"1997",body:"Compact SUV",pt:"ice",h:"Launched in 1997 with all-wheel drive and a boxer engine."},
+{b:"Subaru",n:"Outback",y:"1994",body:"Raised wagon",pt:"ice",h:"Introduced in 1994 as a raised wagon and an early crossover."},
+{b:"Subaru",n:"BRZ",y:"2012",body:"Sports coupe",pt:"ice",h:"Launched in 2012 as a light rear-drive coupe developed with Toyota."},
+{b:"Mitsubishi",n:"Pajero",y:"1982",body:"Off-road SUV",pt:"ice",h:"Introduced in 1982 and won the Dakar Rally many times."},
+{b:"Mitsubishi",n:"Outlander",y:"2001",body:"SUV",pt:"ice",h:"Launched in 2001, with a plug-in hybrid version added in 2013."},
+{b:"Suzuki",n:"Vitara",y:"1988",body:"Compact SUV",pt:"ice",h:"Launched in 1988 as a small SUV, called the Escudo in Japan."},
+{b:"Isuzu",n:"D-Max",y:"2002",body:"Pickup truck",pt:"ice",h:"Launched in 2002 as a tough pickup sold in many countries."},
+{b:"Hyundai",n:"Sonata",y:"1985",body:"Sedan",pt:"ice",h:"The first Sonata appeared in 1985 as a mid-size family sedan."},
+{b:"Hyundai",n:"Tucson",y:"2004",body:"Compact SUV",pt:"ice",h:"Launched in 2004 and is now in its fifth generation."},
+{b:"Kia",n:"Sportage",y:"1993",body:"Compact SUV",pt:"ice",h:"Launched in 1993 as one of Kia’s earliest global SUVs."},
+{b:"Kia",n:"Telluride",y:"2019",body:"Three-row SUV",pt:"ice",h:"Launched in 2019 as a large family SUV aimed at the American market."},
+{b:"Kia",n:"Sonet",y:"2020",body:"Compact SUV",pt:"ice",h:"Launched in India in 2020 as a small SUV."},
+{b:"Kia",n:"Carens",y:"2022",body:"MPV",pt:"ice",h:"The new-generation Carens launched in India in 2022 as a three-row family car."},
+{b:"Volkswagen",n:"Polo",y:"1975",body:"Hatchback",pt:"ice",h:"Introduced in 1975 as a small car below the Golf."},
+{b:"Volkswagen",n:"Tiguan",y:"2007",body:"Compact SUV",pt:"ice",h:"Launched in 2007 and became one of VW’s best-selling models."},
+{b:"Volkswagen",n:"Type 2 (Transporter)",y:"1950",body:"Van",pt:"ice",h:"Introduced in 1950 and became a counter-culture icon as the Microbus."},
+{b:"Volkswagen",n:"ID.4",y:"2020",body:"Electric SUV",pt:"ev",h:"Launched in 2020 as VW’s first global electric SUV."},
+{b:"Audi",n:"A4",y:"1994",body:"Sedan / estate",pt:"ice",h:"Launched in 1994 as the successor to the Audi 80."},
+{b:"Audi",n:"TT",y:"1998",body:"Coupe",pt:"ice",h:"Launched in 1998 with a design inspired by Bauhaus."},
+{b:"Audi",n:"Q7",y:"2005",body:"Large SUV",pt:"ice",h:"Launched in 2005 as Audi’s first large SUV."},
+{b:"BMW",n:"7 Series",y:"1977",body:"Luxury sedan",pt:"ice",h:"Introduced in 1977 as BMW’s flagship sedan."},
+{b:"BMW",n:"X3",y:"2003",body:"Compact SUV",pt:"ice",h:"Launched in 2003 as a smaller SUV than the X5."},
+{b:"BMW",n:"iX",y:"2021",body:"Electric SUV",pt:"ev",h:"Launched in 2021 as BMW’s electric technology flagship SUV."},
+{b:"Mercedes-Benz",n:"C-Class",y:"1993",body:"Sedan",pt:"ice",h:"Introduced in 1993 as the successor to the 190 and has been a core model since."},
+{b:"Mercedes-Benz",n:"A-Class",y:"1997",body:"Hatchback",pt:"ice",h:"Launched in 1997 as a compact, front-wheel-drive Mercedes."},
+{b:"Mercedes-Benz",n:"EQS",y:"2021",body:"Electric luxury sedan",pt:"ev",h:"Launched in 2021 as Mercedes-Benz’s flagship electric sedan."},
+{b:"Porsche",n:"Macan",y:"2014",body:"Compact SUV",pt:"ice",h:"Launched in 2014 and became one of Porsche’s best-selling models."},
+{b:"Porsche",n:"Boxster",y:"1996",body:"Roadster",pt:"ice",h:"Launched in 1996 as an entry-level mid-engined roadster."},
+{b:"Ford",n:"Fiesta",y:"1976",body:"Hatchback",pt:"ice",h:"Launched in 1976 as Ford’s small car for Europe; production ended in 2023."},
+{b:"Ford",n:"Focus",y:"1998",body:"Hatchback / sedan",pt:"ice",h:"Launched in 1998 and was praised for its handling."},
+{b:"Ford",n:"Explorer",y:"1990",body:"SUV",pt:"ice",h:"Introduced in 1990 and helped make SUVs popular family vehicles in the USA."},
+{b:"Ford",n:"Mustang Mach-E",y:"2020",body:"Electric crossover",pt:"ev",h:"Deliveries began in 2020 as Ford’s first dedicated electric crossover."},
+{b:"Chevrolet",n:"Silverado",y:"1998",body:"Pickup truck",pt:"ice",h:"The Silverado name began in 1998 for Chevrolet’s full-size pickup."},
+{b:"Chevrolet",n:"Bolt EV",y:"2016",body:"Electric hatchback",pt:"ev",h:"Deliveries began in late 2016 as an affordable long-range electric car."},
+{b:"Jeep",n:"Willys MB",y:"1941",body:"Military utility vehicle",pt:"ice",h:"Built from 1941 as the military vehicle that gave the Jeep its name."},
+{b:"Jeep",n:"Cherokee (XJ)",y:"1984",body:"SUV",pt:"ice",h:"Launched in 1984 as a compact SUV with a unibody structure."},
+{b:"Jeep",n:"Grand Cherokee",y:"1992",body:"SUV",pt:"ice",h:"Introduced in 1992 as a more upscale Jeep SUV."},
+{b:"Dodge",n:"Challenger",y:"1970",body:"Muscle car",pt:"ice",h:"Launched in 1970 and revived as a retro-styled car in 2008."},
+{b:"Dodge",n:"Viper",y:"1992",body:"Sports car",pt:"ice",h:"Production began in 1992 with a V10 engine and no-frills approach."},
+{b:"Tesla",n:"Model X",y:"2015",body:"Electric SUV",pt:"ev",h:"Deliveries began in 2015 with falcon-wing rear doors."},
+{b:"Tesla",n:"Model Y",y:"2020",body:"Electric crossover",pt:"ev",h:"Deliveries began in 2020 and became one of the world’s best-selling electric cars."},
+{b:"Land Rover",n:"Range Rover Evoque",y:"2011",body:"Compact luxury SUV",pt:"ice",h:"Launched in 2011 as a small, stylish Range Rover."},
+{b:"Jaguar",n:"XJ",y:"1968",body:"Luxury sedan",pt:"ice",h:"Introduced in 1968 and was Jaguar’s flagship sedan for decades."},
+{b:"Jaguar",n:"I-Pace",y:"2018",body:"Electric SUV",pt:"ev",h:"Launched in 2018 as Jaguar’s first fully electric car."},
+{b:"Mini",n:"Cooper (BMW era)",y:"2001",body:"Hatchback",pt:"ice",h:"Launched in 2001 as a modern take on the classic Mini under BMW."},
+{b:"Aston Martin",n:"DB9",y:"2004",body:"Grand tourer",pt:"ice",h:"Launched in 2004 on Aston Martin’s bonded-aluminium platform."},
+{b:"Rolls-Royce",n:"Phantom (2003)",y:"2003",body:"Luxury sedan",pt:"ice",h:"Launched in 2003 as the first Rolls-Royce under BMW ownership."},
+{b:"McLaren",n:"720S",y:"2017",body:"Supercar",pt:"ice",h:"Launched in 2017 as a lightweight supercar with a carbon-fibre structure."},
+{b:"Lotus",n:"Esprit",y:"1976",body:"Sports car",pt:"ice",h:"Launched in 1976 with a wedge shape and featured in James Bond films."},
+{b:"Lotus",n:"Evija",y:"2019",body:"Electric hypercar",pt:"ev",h:"Unveiled in 2019 as Lotus’s first electric hypercar."},
+{b:"Ferrari",n:"Testarossa",y:"1984",body:"Sports car",pt:"ice",h:"Launched in 1984 with distinctive side strakes and a flat-12 engine."},
+{b:"Ferrari",n:"Enzo",y:"2002",body:"Supercar",pt:"ice",h:"Launched in 2002 and named after the company’s founder."},
+{b:"Ferrari",n:"458 Italia",y:"2009",body:"Sports car",pt:"ice",h:"Unveiled in 2009 with a high-revving V8 engine."},
+{b:"Ferrari",n:"LaFerrari",y:"2013",body:"Hybrid hypercar",pt:"ice",h:"Unveiled in 2013 as Ferrari’s first hybrid hypercar."},
+{b:"Lamborghini",n:"Gallardo",y:"2003",body:"Supercar",pt:"ice",h:"Launched in 2003 and became Lamborghini’s best-selling model of its time."},
+{b:"Lamborghini",n:"Aventador",y:"2011",body:"Supercar",pt:"ice",h:"Unveiled in 2011 with a carbon-fibre monocoque and V12 engine."},
+{b:"Lamborghini",n:"Urus",y:"2018",body:"Super SUV",pt:"ice",h:"Production began in 2018 as Lamborghini’s high-performance SUV."},
+{b:"Alfa Romeo",n:"Giulia",y:"2015",body:"Sports sedan",pt:"ice",h:"The modern Giulia launched in 2015 as a rear-drive sports sedan."},
+{b:"Fiat",n:"Panda",y:"1980",body:"City car",pt:"ice",h:"The first Panda appeared in 1980 with a simple, practical design."},
+{b:"Fiat",n:"Uno",y:"1983",body:"Hatchback",pt:"ice",h:"Launched in 1983 and sold in many countries, including Brazil."},
+{b:"Renault",n:"Clio",y:"1990",body:"Hatchback",pt:"ice",h:"Launched in 1990 as the successor to the Renault 5."},
+{b:"Renault",n:"Zoe",y:"2012",body:"Electric hatchback",pt:"ev",h:"Launched in 2012 and became one of Europe’s best-selling early electric cars."},
+{b:"Peugeot",n:"504",y:"1968",body:"Sedan",pt:"ice",h:"Introduced in 1968 and well known for toughness, especially in Africa."},
+{b:"Peugeot",n:"208",y:"2012",body:"Hatchback",pt:"ice",h:"Launched in 2012 as a small hatchback, with an electric version added later."},
+{b:"Citroën",n:"Traction Avant",y:"1934",body:"Sedan",pt:"ice",h:"Launched in 1934 with front-wheel drive and a unitary body."},
+{b:"Škoda",n:"Fabia",y:"1999",body:"Hatchback",pt:"ice",h:"Launched in 1999 as Škoda’s small car under Volkswagen Group ownership."},
+{b:"Volvo",n:"240",y:"1974",body:"Sedan / estate",pt:"ice",h:"Introduced in 1974 and known for safety and long life."},
+{b:"Volvo",n:"XC40",y:"2017",body:"Compact SUV",pt:"ice",h:"Launched in 2017 as Volvo’s small SUV, with an electric version added later."},
+{b:"SEAT",n:"Ibiza",y:"1984",body:"Hatchback",pt:"ice",h:"Launched in 1984 as SEAT’s first independently developed small car."},
+{b:"Lada",n:"2101 (Zhiguli)",y:"1970",body:"Sedan",pt:"ice",h:"Production began in 1970 and was based on the Fiat 124."},
+{b:"UAZ",n:"469",y:"1972",body:"Off-road utility vehicle",pt:"ice",h:"Production began in 1972 as a rugged military and civilian 4x4."},
+{b:"DeLorean",n:"DMC-12",y:"1981",body:"Sports car",pt:"ice",h:"Production began in 1981 with a stainless-steel body and gullwing doors, and it appeared in Back to the Future."},
+{b:"Lucid",n:"Air",y:"2021",body:"Electric luxury sedan",pt:"ev",h:"Deliveries began in 2021 with a focus on long range."},
+{b:"Mahindra",n:"Thar Roxx",y:"2024",body:"Off-road SUV",pt:"ice",h:"Launched in August 2024 as the five-door version of the Thar."},
+{b:"Mahindra",n:"XUV 3XO",y:"2024",body:"Compact SUV",pt:"ice",h:"Launched in India in April 2024 as an update of the XUV300."},
+{b:"Tata",n:"Curvv",y:"2024",body:"Coupe SUV",pt:"ice",h:"Launched in India in 2024 with a coupe-style roofline."},
+{b:"Maruti Suzuki",n:"Grand Vitara",y:"2022",body:"Compact SUV",pt:"ice",h:"Launched in India in 2022 with a strong-hybrid option."},
+{b:"Maruti Suzuki",n:"Jimny (India)",y:"2023",body:"Off-road SUV",pt:"ice",h:"Launched in India in 2023 as a five-door version of the Jimny."},
+{b:"MG",n:"Hector",y:"2019",body:"SUV",pt:"ice",h:"Launched in India in 2019 as MG’s first model there."},
+{b:"MG",n:"Comet EV",y:"2023",body:"Electric city car",pt:"ev",h:"Launched in India in 2023 as a tiny electric city car."},
+{b:"Maserati",n:"Quattroporte",y:"1963",body:"Luxury sedan",pt:"ice",h:"Introduced in 1963 as a four-door sedan with sports-car performance."},
+{b:"Maserati",n:"Ghibli (1967)",y:"1967",body:"Grand tourer",pt:"ice",h:"Launched in 1967 as a V8 grand tourer; the name was later reused."},
+{b:"Maserati",n:"MC20",y:"2020",body:"Supercar",pt:"ice",h:"Unveiled in 2020 as Maserati’s mid-engined supercar."},
+{b:"Genesis",n:"G70",y:"2017",body:"Sports sedan",pt:"ice",h:"Launched in 2017 as a rear-drive sports sedan."},
+{b:"Genesis",n:"GV80",y:"2020",body:"Luxury SUV",pt:"ice",h:"Launched in 2020 as the brand’s first SUV."},
+{b:"Koenigsegg",n:"CC8S",y:"2002",body:"Hypercar",pt:"ice",h:"The first production Koenigsegg, built from 2002."},
+{b:"Koenigsegg",n:"Regera",y:"2015",body:"Hybrid hypercar",pt:"ice",h:"Introduced in 2015 with a hybrid system and direct drive in place of a conventional gearbox."},
+{b:"Koenigsegg",n:"Jesko",y:"2019",body:"Hypercar",pt:"ice",h:"Unveiled in 2019 as a track and top-speed focused hypercar."},
+{b:"Zeekr",n:"001",y:"2021",body:"Electric shooting brake",pt:"ev",h:"Launched in China in 2021 as the brand’s first model."},
+{b:"Great Wall",n:"Haval H6",y:"2011",body:"Compact SUV",pt:"ice",h:"Launched in 2011 and became one of China’s best-selling SUVs."},
+{b:"Great Wall",n:"Tank 300",y:"2020",body:"Off-road SUV",pt:"ice",h:"Launched in 2020 as a boxy off-roader from the Tank brand."},
+{b:"BYD",n:"F3",y:"2005",body:"Sedan",pt:"ice",h:"Launched in 2005 as BYD’s first big-selling car in China."},
+{b:"BYD",n:"Tang",y:"2015",body:"Plug-in hybrid SUV",pt:"ice",h:"Launched in 2015 as one of BYD’s first plug-in hybrid SUVs."},
+{b:"BYD",n:"Han",y:"2020",body:"Electric sedan",pt:"ev",h:"Launched in 2020 with BYD’s Blade battery."},
+{b:"BYD",n:"Atto 3",y:"2022",body:"Electric SUV",pt:"ev",h:"Launched internationally in 2022 as BYD’s global entry electric SUV."},
+{b:"Denza",n:"D9",y:"2022",body:"Electric / hybrid MPV",pt:"ev",h:"Launched in 2022 as a premium people carrier."},
+{b:"NIO",n:"ET7",y:"2022",body:"Electric sedan",pt:"ev",h:"Deliveries began in 2022 with battery-swap support."},
+{b:"Xpeng",n:"P7",y:"2020",body:"Electric sedan",pt:"ev",h:"Deliveries began in 2020 as Xpeng’s first sedan."},
+{b:"Li Auto",n:"Li ONE",y:"2019",body:"Range-extended SUV",pt:"ev",h:"Launched in 2019 with a small petrol engine acting as a range extender."},
+{b:"Xiaomi Auto",n:"SU7",y:"2024",body:"Electric sedan",pt:"ev",h:"Launched in March 2024 as Xiaomi’s first car."},
+{b:"Togg",n:"T10X",y:"2023",body:"Electric SUV",pt:"ev",h:"Production began in 2023 as Turkey’s first domestically developed electric car."},
+{b:"Iran Khodro",n:"Paykan",y:"1967",body:"Sedan",pt:"ice",h:"Built from 1967 and based on the British Hillman Hunter."},
+{b:"Iran Khodro",n:"Samand",y:"2001",body:"Sedan",pt:"ice",h:"Launched in 2001 as a national sedan based on the Peugeot 405."},
+{b:"Proton",n:"X50",y:"2020",body:"Compact SUV",pt:"ice",h:"Launched in 2020 as Proton’s compact SUV built with Geely."},
+{b:"Aurus",n:"Senat",y:"2018",body:"Limousine",pt:"ice",h:"Unveiled in 2018 as a Russian luxury limousine."},
+{b:"Cadillac",n:"Escalade",y:"1998",body:"Full-size SUV",pt:"ice",h:"Launched in 1998 as Cadillac’s luxury full-size SUV."},
+{b:"Cadillac",n:"Lyriq",y:"2022",body:"Electric SUV",pt:"ev",h:"Deliveries began in 2022 as Cadillac’s first long-range electric car."},
+{b:"Alpine",n:"A110 (original)",y:"1961",body:"Sports car",pt:"ice",h:"Introduced in 1961 and became a rally champion; a new A110 followed in 2017."},
+{b:"Smart",n:"Fortwo",y:"1998",body:"City car",pt:"ice",h:"Launched in 1998 as a two-seat city car designed to fit in tiny parking spaces."},
+{b:"Opel",n:"Corsa",y:"1982",body:"Hatchback",pt:"ice",h:"Launched in 1982 as Opel’s small car and is still built today."},
+{b:"Opel",n:"Astra",y:"1991",body:"Hatchback",pt:"ice",h:"The Astra name began in 1991 for Opel’s compact family car."},
+{b:"Lexus",n:"RX",y:"1998",body:"Luxury crossover",pt:"ice",h:"Launched in 1998 and is widely seen as the first luxury crossover."},
+{b:"Lexus",n:"LFA",y:"2010",body:"Supercar",pt:"ice",h:"Production began in 2010 with a V10 engine and carbon-fibre body."},
+{b:"Kia",n:"Picanto",y:"2004",body:"City car",pt:"ice",h:"Launched in 2004 as a small city car."},
+{b:"Hyundai",n:"Kona",y:"2017",body:"Compact SUV",pt:"ice",h:"Launched in 2017, with an electric version added in 2018."},
+{b:"Toyota",n:"Mirai",y:"2014",body:"Hydrogen sedan",pt:"h2",h:"The first Mirai went on sale in Japan in late 2014 as one of the first mass-market hydrogen cars; the second generation followed in 2020.",sp:{"Price":"From $52,990 in the US (2026 model, California only)","Engine / motor":"Hydrogen fuel cell with one electric motor","Power":"182 hp (2026 model)","Fuel economy / range":"402 miles, EPA (2026 model)"},feat:"Rear-wheel drive on Toyota’s GA-L platform. Regenerative braking charges a lithium-ion battery. Purchase or lease includes up to $15,000 of free hydrogen and an eight-year, 100,000-mile warranty on key fuel-cell parts.",safe:"Toyota Safety Sense 3.0 with full-speed Dynamic Radar Cruise Control. Crash rating not found."},
+{b:"Hyundai",n:"Nexo",y:"2018",body:"Hydrogen SUV",pt:"h2",h:"The first Nexo launched in 2018. The second generation was revealed in 2025 with a redesigned body and bigger hydrogen tanks.",sp:{"Price":"Not announced in the sources found","Engine / motor":"Hydrogen fuel cell (110 kW) with an 80 kW battery","Power":"201 hp (second generation)","Fuel economy / range":"Over 700 km claimed; 826 km WLTP projected"},feat:"Three tanks hold about 6.7 kg of hydrogen and fill in about five minutes. Dual 12.3-inch screens, adaptive regenerative braking and 0 to 62 mph in 7.8 seconds. European versions can tow.",safe:"Latest Hyundai safety technology on a stronger steel frame. Crash rating not found."},
+{b:"Honda",n:"CR-V e:FCEV",y:"2024",body:"Plug-in hydrogen SUV",pt:"h2",h:"Revealed in 2024 as a hydrogen fuel-cell SUV you can also plug in, and offered on lease in California.",sp:{"Price":"Lease only: $459/month for 3 years (2025 offer); MSRP listed at $51,450","Engine / motor":"Hydrogen fuel cell stack with electric motor","Power":"174 hp","Dimensions":"187.6 x 73.5 x 66.6 in","Weight":"4,460 lb","Fuel economy / range":"29 miles on battery alone"},feat:"A 17.7 kWh battery you can plug in. Front-wheel drive and a single trim level.",safe:"Standard blind-spot alert, collision warning, driver attention monitor and child seat anchors. Crash rating not found."},
+{b:"BMW",n:"iX5 Hydrogen",y:"2028",body:"Fuel-cell SUV (planned)",pt:"h2",h:"BMW plans series production in 2028 with a third-generation fuel cell developed with Toyota. A pilot fleet has been tested worldwide since 2023.",sp:{"Price":"Not announced","Engine / motor":"Hydrogen fuel cell, 125 kW (test car)","Power":"295 kW electric motor (test car)","Fuel economy / range":"Target of 750 km"},feat:"Targets 0 to 100 km/h in under five seconds. Two 700-bar carbon-fibre tanks hold 6 kg of hydrogen in the test car. Fuel-cell systems will be built in Steyr, Austria.",safe:"Not announced."},
+{b:"Honda",n:"Clarity Fuel Cell",y:"2016",body:"Hydrogen sedan",pt:"h2",h:"Launched in 2016 as a five-seat hydrogen sedan; production later ended."},
+{b:"Hyundai",n:"ix35 Fuel Cell",y:"2013",body:"Hydrogen SUV",pt:"h2",h:"Hyundai began series production of this fuel-cell version of the ix35 in 2013."},
+{b:"Honda",n:"FCX Clarity",y:"2008",body:"Hydrogen sedan",pt:"h2",h:"Leased from 2008 as one of the first hydrogen fuel-cell cars offered to customers."},
+{b:"Hyundai",n:"N Vision 74",y:"2022",body:"Concept car",pt:"h2",h:"Unveiled in 2022 as a hydrogen fuel-cell hybrid performance concept inspired by the 1974 Pony Coupe concept."},
+{b:"Hyundai",n:"Initium",y:"2024",body:"Concept car",pt:"h2",h:"Shown in late 2024 and previewed the second-generation Nexo hydrogen SUV."},
+{b:"Hyundai",n:"45 concept",y:"2019",body:"Concept car",pt:"ev",h:"Shown in 2019 and previewed the styling of the Ioniq 5."},
+{b:"Mercedes-Benz",n:"Vision EQXX",y:"2022",body:"Concept car",pt:"ev",h:"Unveiled in 2022 as an efficiency-focused electric concept that drove about 1,000 km on one charge in a road test."},
+{b:"Porsche",n:"Mission E",y:"2015",body:"Concept car",pt:"ev",h:"Shown in 2015 and led to the production Taycan."},
+{b:"Volkswagen",n:"ID. Buzz concept",y:"2017",body:"Concept car",pt:"ev",h:"Shown in 2017 as a modern electric take on the Microbus; the production ID. Buzz followed in 2022."},
+{b:"Toyota",n:"FT-1",y:"2014",body:"Concept car",pt:"ice",h:"Shown in 2014 and previewed the styling of the fifth-generation Supra."},
+{b:"Honda",n:"Urban EV Concept",y:"2017",body:"Concept car",pt:"ev",h:"Shown in 2017 and led to the Honda e."},
+{b:"Nissan",n:"Ariya Concept",y:"2019",body:"Concept car",pt:"ev",h:"Shown in 2019 and led to the Ariya electric crossover."},
+{b:"Kia",n:"EV9 Concept",y:"2021",body:"Concept car",pt:"ev",h:"Shown in 2021 and previewed the production EV9."},
+{b:"BMW",n:"Vision Neue Klasse",y:"2023",body:"Concept car",pt:"ev",h:"Revealed in 2023 and previewed BMW’s Neue Klasse electric platform."},
+{b:"Rolls-Royce",n:"103EX",y:"2016",body:"Concept car",pt:"ev",h:"Revealed in 2016 as a self-driving electric concept for the brand’s future."}];
+function ptl(c){return c.pt==="ev"?"Electric":c.pt==="h2"?"Hydrogen fuel cell":"Petrol / diesel"}
+var PH={};
+var XP={h2:[["Body shell and panels","The outer skin and structure that shape the car and protect occupants.",140,10,320,34],["Interior and seats","Seats, dashboard, controls and cabin trim.",150,70,300,34],["Fuel cell stack","Combines hydrogen with oxygen from the air to make electricity; the only exhaust is water.",60,130,150,40],["Electric motor","Turns electricity into motion at the wheels.",225,130,150,40],["Hydrogen tanks","Carbon-fibre tanks store compressed hydrogen at very high pressure.",390,130,150,40],["Battery pack and chassis","A small battery stores energy from the fuel cell and braking, and the chassis carries the car.",90,196,420,26]],ice:[["Body shell and panels","The outer skin and structure that shape the car and protect occupants.",140,10,320,34],["Interior and seats","Seats, dashboard, controls and cabin trim.",150,70,300,34],["Engine","Burns fuel to produce power.",60,130,150,40],["Transmission","Passes engine power to the wheels through gears.",225,130,150,40],["Fuel tank and exhaust","Stores fuel and carries exhaust gases out of the car.",390,130,150,40],["Chassis and suspension","The frame, springs and dampers that carry the car and smooth the ride.",90,196,420,26]],ev:[["Body shell and panels","The outer skin and structure that shape the car and protect occupants.",140,10,320,34],["Interior and seats","Seats, dashboard, controls and cabin trim.",150,70,300,34],["Electric motor","Turns electric power into motion.",60,130,150,40],["Inverter and controller","Converts battery power for the motor and manages it.",225,130,150,40],["Charge port and charger","Takes power from the plug into the car.",390,130,150,40],["Battery pack and chassis","The battery sits low in the floor and carries the car’s structure.",90,196,420,26]]};
+var cur=0,tab="Overview",brand="All",TABS=["Overview","Specs","Features","Safety","Exploded view","History","Photos"];
+function na(){return '<span class="na">Not added yet</span>'}
+function list(){var q=$("q").value.toLowerCase();return GC.filter(function(c){return(brand==="All"||c.b===brand)&&inBS(c)&&(c.b+" "+c.n+" "+c.body+" "+c.y).toLowerCase().indexOf(q)>-1})}
+function drawList(){var L=list();$("rlist").innerHTML=L.length?L.map(function(c){var i=GC.indexOf(c);return '<button class="ritem" data-i="'+i+'" aria-current="'+(i===cur)+'"><b>'+esc(c.b+" "+c.n)+'</b><small>'+esc(c.body)+" · "+esc(c.y)+'</small></button>'}).join(""):'<p class="na">No cars match. Try a different word or brand.</p>';
+var items=document.querySelectorAll(".ritem");for(var k=0;k<items.length;k++)items[k].onclick=function(){cur=+this.getAttribute("data-i");drawList();drawPanel()}}
+function drawChips(){var b=["All"].concat(Object.keys(BR));$("chips").innerHTML=b.map(function(x){return '<button aria-pressed="'+(x===brand)+'">'+esc(x)+'</button>'}).join("");
+var bs=$("chips").children;for(var i=0;i<bs.length;i++)bs[i].onclick=function(){brand=this.textContent;drawChips();drawList()}}
+function drawTabs(){$("tabs").innerHTML=TABS.map(function(t){return '<button aria-pressed="'+(t===tab)+'">'+t+'</button>'}).join("");var bs=$("tabs").children;for(var i=0;i<bs.length;i++)bs[i].onclick=function(){tab=this.textContent;drawTabs();drawPanel()}}
+function drawPanel(){var c=GC[cur],h="";
+if(tab==="Overview")h='<h3>'+esc(c.b+" "+c.n)+'</h3><p>'+esc(c.h)+'</p><span class="pill">'+esc(c.body)+'</span><span class="pill">Launched '+esc(c.y)+'</span><span class="pill">'+ptl(c)+'</span>';
+else if(tab==="Specs")h='<h3>Specifications</h3><div class="tw"><table>'+[["Launch year",c.y],["Body type",c.body],["Powertrain",ptl(c)]].map(function(r){return '<tr><th>'+r[0]+'</th><td>'+esc(r[1])+'</td></tr>'}).join("")+["Price","Engine / motor","Power","Torque","Gearbox","Dimensions","Weight","Fuel economy / range","Top speed"].map(function(r){return '<tr><th>'+r+'</th><td>'+(c.sp&&c.sp[r]?esc(c.sp[r]):na())+'</td></tr>'}).join("")+'</table></div><p class="note">Specs change by generation, engine and market, so each version needs its own verified entry.</p>';
+else if(tab==="Features")h='<h3>Features</h3>'+(c.feat?'<p>'+esc(c.feat)+'</p>':["Comfort","Infotainment","Driver assistance","Lighting","Wheels and tyres"].map(function(f){return '<p><b>'+f+':</b> '+na()+'</p>'}).join(""));
+else if(tab==="Safety")h='<h3>Safety and ratings</h3><p>Overall rating: '+na()+'</p><p>Safety features: '+(c.safe?esc(c.safe):na())+'</p><p>Crash ratings depend on the exact version and market. Check the official programs:</p><p><a href="https://www.globalncap.org" target="_blank" rel="noopener">Global NCAP</a> · <a href="https://www.euroncap.com" target="_blank" rel="noopener">Euro NCAP</a> · <a href="https://www.nhtsa.gov/ratings" target="_blank" rel="noopener">NHTSA (USA)</a></p>';
+else if(tab==="Exploded view"){var P=XP[c.pt];h='<h3>Exploded view</h3><svg class="xv" viewBox="0 0 600 300" role="group" aria-label="Exploded parts layout"><line x1="300" y1="44" x2="300" y2="196" stroke="currentColor" stroke-dasharray="5 5" opacity=".4"/>'+P.map(function(p,i){return '<g class="part" tabindex="0" data-i="'+i+'"><rect x="'+p[2]+'" y="'+p[3]+'" width="'+p[4]+'" height="'+p[5]+'" rx="8" fill="'+["#c9ced6","#aeb6c2","#f2c200","#d99a2b","#8e99a8","#6d7787"][i]+'" stroke="#111216" stroke-width="1.5"/><text x="'+(p[2]+p[4]/2)+'" y="'+(p[3]+p[5]/2+4)+'" text-anchor="middle" fill="#111" style="fill:#111">'+esc(p[0].split(" and ")[0])+'</text></g>'}).join("")+'<circle cx="150" cy="262" r="22" fill="#17181c"/><circle cx="230" cy="262" r="22" fill="#17181c"/><circle cx="370" cy="262" r="22" fill="#17181c"/><circle cx="450" cy="262" r="22" fill="#17181c"/><text x="300" y="296" text-anchor="middle">Wheels and tyres</text></svg><p id="xd">Tap a part to see what it does.</p><p class="note">A generic layout for this type of car, not the exact parts of this model.</p>'}
+else if(tab==="History")h='<h3>History</h3><p><b>'+esc(c.b)+':</b> '+esc(BR[c.b]||"Not added yet")+'</p><p><b>'+esc(c.n)+':</b> '+esc(c.h)+'</p><p>Generation-by-generation timeline: '+na()+'</p>';
+else h='<h3>Photos</h3><div class="spy">'+(PH[cur]?'<img src="'+PH[cur]+'" alt="Your photo" style="max-width:100%;border-radius:6px">':'No photo yet')+'</div><p><input type="file" accept="image/*" id="pf" aria-label="Choose a photo"></p><p class="note">Preview only: photos are not saved when you leave.</p><p class="note">Add photos you own or have a licence for. Other sites’ photos can’t be copied in.</p>';
+$("panel").innerHTML=h;if(tab==="Photos"){$("pf").onchange=function(){var f=this.files[0];if(f&&f.type.indexOf("image/")===0){PH[cur]=URL.createObjectURL(f);drawPanel()}}}
+if(tab==="Exploded view"){var pr=document.querySelectorAll(".part");for(var i=0;i<pr.length;i++){var go=function(){var p=XP[c.pt][+this.getAttribute("data-i")];$("xd").innerHTML="<b>"+esc(p[0])+":</b> "+esc(p[1])};pr[i].onclick=go;pr[i].onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go.call(this)}}}}}
+$("q").oninput=function(){var L=list();if(L.length&&L.indexOf(GC[cur])<0)cur=GC.indexOf(L[0]);drawList();drawPanel()};
+drawChips();drawTabs();drawList();drawPanel();
+/* brands */
+var BD=[["Toyota","Japan",1937],["Honda","Japan",1948],["Nissan","Japan",1933],["Mazda","Japan",1920],["Subaru","Japan",1953],["Suzuki","Japan",1909],["Mitsubishi","Japan",1970],["Isuzu","Japan",1916],["Lexus","Japan",1989],["Daihatsu","Japan",1907],["Aspark","Japan",2014],
+["Hyundai","South Korea",1967],["Kia","South Korea",1944],["Genesis","South Korea",2015],
+["Volkswagen","Germany",1937],["Audi","Germany",1909],["BMW","Germany",1916],["Mercedes-Benz","Germany",1926],["Porsche","Germany",1931],["Opel","Germany",1862],
+["Ford","USA",1903],["Chevrolet","USA",1911],["Cadillac","USA",1902],["Buick","USA",1903],["Chrysler","USA",1925],["Lincoln","USA",1917],["Jeep","USA",1941],["Tesla","USA",2003],["Rivian","USA",2009],["Lucid","USA",2007],
+["Ferrari","Italy",1947],["Lamborghini","Italy",1963],["Maserati","Italy",1914],["Alfa Romeo","Italy",1910],["Fiat","Italy",1899],["Lancia","Italy",1906],["Pagani","Italy",1992],
+["Land Rover","UK",1948],["Jaguar","UK",1922],["Rolls-Royce","UK",1906],["Bentley","UK",1919],["Aston Martin","UK",1913],["McLaren","UK",1963],["Lotus","UK",1952],["MG","UK",1924],["Morgan","UK",1910],["Mini","UK",1959],
+["Peugeot","France",1810],["Renault","France",1899],["Citroën","France",1919],["Bugatti","France",1909],
+["Volvo","Sweden",1927],["Koenigsegg","Sweden",1994],["Polestar","Sweden",2017],
+["Škoda","Czech Republic",1895],["Dacia","Romania",1966],["SEAT","Spain",1950],["Cupra","Spain",2018],["Rimac","Croatia",2009],
+["Tata","India",1945],["Mahindra","India",1945],["Maruti Suzuki","India",1981],["Hindustan Motors","India",1942],["Force Motors","India",1958],
+["BYD","China",1995],["Geely","China",1986],["Great Wall","China",1984],["Chery","China",1997],["SAIC","China",1955],["NIO","China",2014],["XPeng","China",2014],["Li Auto","China",2015],["Hongqi","China",1958],
+["VinFast","Vietnam",2017],["Proton","Malaysia",1983],["Perodua","Malaysia",1992],["Infiniti","Japan",1989],["Acura","Japan",1986],["Datsun","Japan",1931],["Mitsuoka","Japan",1968],["KG Mobility (SsangYong)","South Korea",1954],["Dongfeng","China",1969],["FAW","China",1953],["GAC","China",1954],["BAIC","China",1958],["Leapmotor","China",2015],["Zeekr","China",2021],["Lynk & Co","China",2016],["Denza","China",2010],["Xiaomi Auto","China",2021],["Iran Khodro","Iran",1962],["Saipa","Iran",1966],["Togg","Turkey",2018],["W Motors","UAE",2012],["Ceer","Saudi Arabia",2022],["Alpine","France",1955],["DS Automobiles","France",2014],["Vauxhall","UK",1857],["Smart","Germany",1994],["Abarth","Italy",1949],["Zenvo","Denmark",2008],["Donkervoort","Netherlands",1978],["Caterham","UK",1973],["Ariel","UK",2001],["TVR","UK",1947],["Alpina","Germany",1965],["Ineos Automotive","UK",2017],["UAZ","Russia",1941],["GAZ","Russia",1932],["Aurus","Russia",2018],["GMC","USA",1912],["Ram","USA",2009],["Hennessey","USA",1991],["SSC","USA",1998],["Scout Motors","USA",2022],["Innoson","Nigeria",1987],["Kiira Motors","Uganda",2014],["Wallyscar","Tunisia",2006]];
+var ct="All";
+function drawBrands(){var cs=["All"];BD.forEach(function(b){if(cs.indexOf(b[1])<0)cs.push(b[1])});
+$("bchips").innerHTML=cs.map(function(c){return '<button aria-pressed="'+(c===ct)+'">'+esc(c)+'</button>'}).join("");
+var bs=$("bchips").children;for(var i=0;i<bs.length;i++)bs[i].onclick=function(){ct=this.textContent;drawBrands()};
+var q=$("bq").value.toLowerCase(),L=BD.filter(function(b){return(ct==="All"||b[1]===ct)&&b[0].toLowerCase().indexOf(q)>-1}).sort(function(a,b){return a[0]<b[0]?-1:1});
+$("bgrid").innerHTML=L.length?L.map(function(b){var n=GC.filter(function(c){return c.b===b[0]}).length;return '<button class="card bc" data-b="'+esc(b[0])+'"><h3>'+esc(b[0])+'</h3><small>'+esc(b[1])+' · since '+b[2]+'</small><br><small>'+(n?n+(n>1?" cars":" car")+" in the guide":"Cars not added yet")+'</small></button>'}).join(""):'<p class="na">No brands match.</p>';
+$("bnote").textContent=BD.length+" brands listed. Founding years are for the company or brand and can differ from the first car. This is a starting list, not every brand in the world.";
+var cb=document.querySelectorAll(".bc");for(var k=0;k<cb.length;k++)cb[k].onclick=function(){$("q").value=this.getAttribute("data-b");brand="All";drawChips();$("q").oninput();$("cars").scrollIntoView()}}
+$("bq").oninput=drawBrands;drawBrands();
+/* Expanded Infrastructure & Service Centers Data */
+var INFRA = [
+    {n: "Superfast EV Hub (CCS2 / Type 2)", type: "charging", loc: "Metro Highway Corridor", dt: "24/7 Open · 150kW - 350kW DC fast chargers", map: "https://www.google.com/maps/search/EV+charging+station+near+me"},
+    {n: "National Fuel & CNG Station", type: "fuel", loc: "City Ring Road", dt: "24/7 Open · Petrol, Diesel, Speed X, CNG", map: "https://www.google.com/maps/search/petrol+pump+near+me"},
+    {n: "EcoSteam Touchless Car Wash", type: "wash", loc: "Downtown Auto Mall", dt: "Open till 9 PM · Ceramic coating & foam wash", map: "https://www.google.com/maps/search/car+wash+center+near+me"},
+    {n: "Apex Precision Auto Workshop", type: "workshop", loc: "Industrial Sector 4", dt: "Specialized in engine tuning, suspension & diagnostics", map: "https://www.google.com/maps/search/car+workshop+near+me"},
+    {n: "Authorized Toyota & Lexus Service", type: "brandsc", loc: "North City Bypass", dt: "Official diagnostics, genuine parts, certified technicians", map: "https://www.google.com/maps/search/Toyota+service+center+near+me"},
+    {n: "Authorized Hyundai & Kia Service", type: "brandsc", loc: "West Commercial Hub", dt: "Express maintenance, body shop, EV care", map: "https://www.google.com/maps/search/Hyundai+service+center+near+me"},
+    {n: "Authorized Tata & Mahindra Service", type: "brandsc", loc: "South Expressway", dt: "SUV specialists, 4x4 alignment, warranty repairs", map: "https://www.google.com/maps/search/Mahindra+service+center+near+me"}
+];
+function drawInfra(filter) {
+    var filtered = filter === "all" ? INFRA : INFRA.filter(function(i){ return i.type === filter; });
+    $("infraGrid").innerHTML = filtered.map(function(item) {
+        return '<article class="card">' +
+            '<span class="tag">' + esc(item.type.toUpperCase()) + '</span>' +
+            '<h3>' + esc(item.n) + '</h3>' +
+            '<div>📍 ' + esc(item.loc) + '</div>' +
+            '<p class="note" style="margin:8px 0 12px">' + esc(item.dt) + '</p>' +
+            '<a class="btn alt" href="' + item.map + '" target="_blank" rel="noopener" style="font-size:13px;padding:8px 12px">Open in Maps</a>' +
+            '</article>';
+    }).join("");
+}
+var infraButtons = document.querySelectorAll("#infocfg button");
+for (var ib = 0; ib < infraButtons.length; ib++) {
+    infraButtons[ib].onclick = function() {
+        for (var x = 0; x < infraButtons.length; x++) infraButtons[x].setAttribute("aria-pressed", "false");
+        this.setAttribute("aria-pressed", "true");
+        drawInfra(this.getAttribute("data-target"));
+    };
+}
+drawInfra("all");
+/* news */
+var NEWS=[
+{r:"India",t:"Audi launches the third-generation Q3",d:"Scheduled 16 Oct 2026",s:"The new entry-level luxury SUV has a redesigned exterior, a more tech-focused cabin and larger dimensions. Bookings were open for Rs 1 lakh.",n:"CarToq",u:"https://www.cartoq.com/car-news/four-new-car-launches-october-2026/"},
+{r:"India",t:"Renault Duster gets a strong-hybrid version",d:"Scheduled 17 Oct 2026",s:"The new Duster, launched in March 2026 with turbo-petrol engines, adds a hybrid with a claimed 29 km/l.",n:"CarToq",u:"https://www.cartoq.com/car-news/four-new-car-launches-october-2026/"},
+{r:"India",t:"Mahindra XUV 3XO gets a factory-fitted CNG option",d:"Scheduled 15 Oct 2026",s:"Described as Mahindra’s first CNG sub-compact SUV.",n:"CarToq",u:"https://www.cartoq.com/car-news/four-new-car-launches-october-2026/"},
+{r:"India",t:"Toyota Glanza facelift",d:"Scheduled 14 Oct 2026",s:"The updated premium hatchback follows the Maruti Baleno facelift and shares its underpinnings.",n:"CarToq",u:"https://www.cartoq.com/car-news/four-new-car-launches-october-2026/"},
+{r:"India",t:"Volvo brings the EX90 and ES90 electric cars",d:"Scheduled 12 Oct 2026",s:"The ES90 marks Volvo’s return to the luxury sedan segment, alongside the EX90 SUV.",n:"Autocar India",u:"https://www.autocarindia.com/car-news/upcoming-car-launches-and-debuts-in-october-2026-440877"},
+{r:"India",t:"Maybach S-Class, Honda Elevate and Skoda Slavia facelifts",d:"Scheduled 5 and 6 Oct 2026",s:"The Maybach S-Class facelift was set for 5 Oct, and the Elevate and Slavia facelifts for 6 Oct.",n:"Autocar India",u:"https://www.autocarindia.com/car-news/upcoming-car-launches-and-debuts-in-october-2026-440877"},
+{r:"India",t:"Hyundai Bayon expected",d:"Expected mid to late Oct 2026",s:"Reports point to an India debut around the middle of the month, during the festive season.",n:"Spinny",u:"https://www.spinny.com/blog/upcoming-cars-in-october-2026/"},
+{r:"USA",t:"2027 Volkswagen Atlas and Tiguan arrive",d:"October 2026",s:"The redesigned Atlas and the 2027 Tiguan are among the October arrivals, with a new electric VW model also making its debut.",n:"DAX Street",u:"https://daxstreet.com/cars/427163/all-cars-launching-in-october-2026-in-the-us/"},
+{r:"USA",t:"Ford Bronco RTR opens for orders",d:"Orders from Oct 2026",s:"The performance-oriented Bronco RTR takes orders this month, with customer deliveries beginning in January 2027.",n:"DAX Street",u:"https://daxstreet.com/cars/427163/all-cars-launching-in-october-2026-in-the-us/"},
+{r:"UK",t:"Jaguar Type 01 heads for its global premiere",d:"Global reveal Oct 2026",s:"Jaguar’s controversial new electric model is lined up for its worldwide debut this month, with order books due to open late in 2026.",n:"Select Car Leasing",u:"https://www.selectcarleasing.co.uk/news/article/top-9-hottest-new-cars-uk-2026"},
+{r:"UK",t:"Range Rover Sport Electric due by year end",d:"Expected late 2026",s:"The electric Range Rover Sport is expected to reach showrooms before the end of the year.",n:"Select Car Leasing",u:"https://www.selectcarleasing.co.uk/news/article/top-9-hottest-new-cars-uk-2026"},
+{r:"UK",t:"BYD’s Denza arrives with the Bao 5",d:"Order books open late 2026",s:"Denza is BYD’s premium brand and is new to the UK. The boxy Bao 5 plug-in hybrid 4x4 is reported to make 677 bhp.",n:"Autocar",u:"https://images.cdn.autocar.co.uk/car-news/new-cars/new-cars-2026"},
+{r:"UK",t:"Audi A6 Allroad goes on sale",d:"On sale Oct 2026",s:"A raised, tougher take on the latest petrol A6 estate, and the first of a new line of rugged executive cars.",n:"Autocar",u:"https://images.cdn.autocar.co.uk/car-news/new-cars/new-cars-2026"},
+{r:"Australia",t:"Lepas L6 becomes Chery’s new brand’s first Australian car",d:"Due Oct 2026",s:"The electric mid-size SUV is the first model the Lepas brand puts on sale in Australia.",n:"CarsGuide",u:"https://www.carsguide.com.au/news/cadillac/lyriq/2027"},
+{r:"Australia",t:"Cannon PHEV ute expected",d:"Expected Oct 2026",s:"A plug-in hybrid version of the Cannon dual-cab ute is expected to launch officially this month.",n:"CarsGuide",u:"https://www.carsguide.com.au/news/cadillac/lyriq/2027"},
+{r:"Australia",t:"Volvo EX60 and updated BMW 7 Series coming",d:"Later in 2026",s:"The electric EX60 arrives in two versions (Ultra P6 RWD and Ultra P10 AWD), and an updated 7 Series is planned for the fourth quarter with mild-hybrid and electric versions.",n:"CarsGuide, Cars24",u:"https://www.cars24.com.au/car-guide/upcoming-cars-australia-second-half-2026/"},
+{r:"France",t:"Paris Motor Show opens",d:"12 to 18 Oct 2026",s:"The 91st Paris Motor Show runs from 12 to 18 October, with 20 Chinese brands attending and at least seven all-new models from them.",n:"Automotive World",u:"https://www.automotiveworld.com/news/stellantis-to-show-60-plus-vehicles-at-2026-paris-motor-show/"},
+{r:"France",t:"DS N°7 officially launches",d:"Paris, Oct 2026",s:"Available as hybrid and full electric, with up to 740 km of range quoted.",n:"Automotive World",u:"https://www.automotiveworld.com/news/stellantis-to-show-60-plus-vehicles-at-2026-paris-motor-show/"},
+{r:"Germany",t:"Mercedes-Benz shows six premieres in Paris",d:"12 Oct 2026",s:"The all-new GLA, the electric VLE people carrier (over 700 km WLTP), a new GLE and S-Class, plus the AMG CLA 45 and GT 4-Door Coupe.",n:"Automotive World",u:"https://www.automotiveworld.com/news/mercedes-benz-brings-six-premieres-to-paris-motor-show/"},
+{r:"Germany",t:"New Opel Astra with Intelli-Lux HD lights",d:"Paris, Oct 2026",s:"The headlights use more than 50,000 elements, and Opel returns to the Paris show after a ten-year absence.",n:"Automotive World",u:"https://www.automotiveworld.com/news/stellantis-to-show-60-plus-vehicles-at-2026-paris-motor-show/"},
+{r:"Italy",t:"Lancia Gamma gets its French premiere",d:"Paris, Oct 2026",s:"A fastback crossover built in Melfi that brings Lancia back to the upper segments, with electric and hybrid versions.",n:"Automotive World",u:"https://www.automotiveworld.com/news/stellantis-to-show-60-plus-vehicles-at-2026-paris-motor-show/"},
+{r:"Italy",t:"Fiat unveils two new C-segment models",d:"Paris, Oct 2026",s:"Fiat shows two new models and a concept alongside the 600 and Grande Panda. Reports use the names Grizzly and Grizzly Fastback, which Stellantis has not confirmed.",n:"Automotive World",u:"https://www.automotiveworld.com/news/stellantis-to-show-60-plus-vehicles-at-2026-paris-motor-show/"},
+{r:"South Korea",t:"Fifth-generation Hyundai Tucson at Paris",d:"Paris, Oct 2026",s:"The new Tucson appears in both regular and N Line versions.",n:"Auto Express",u:"https://www.autoexpress.co.uk/paris-motor-show/370475/paris-motor-show-2026-guide-all-key-cars"},
+{r:"China",t:"Li Auto 2026 i6 launches on 28 Oct",d:"Launch 28 Oct, deliveries early Nov",s:"The updated electric SUV goes on show at the Paris Motor Show on 12 Oct. Pricing has not been announced, and it no longer uses CATL batteries.",n:"CnEVPost",u:"https://cnevpost.com/2026/10/09/li-auto-launch-2026-li-i6-oct-28/"},
+{r:"UAE",t:"Ninth-generation Toyota Hilux launched in the UAE",d:"15 Oct 2026",s:"The all-new Hilux starts at AED 107,900 in the UAE.",n:"Dubicars",u:"https://www.dubicars.com/videos/dubicars-highlights/-r--1314"},
+{r:"UAE",t:"Jeep Wrangler Moab 392 brings back the V8",d:"14 Oct 2026",s:"The 2026 Wrangler Moab 392 launched in the UAE with a 6.4-litre HEMI V8 and extra off-road upgrades.",n:"Dubicars",u:"https://www.dubicars.com/videos/dubicars-highlights/-r--1314"},
+{r:"UAE",t:"About two dozen new cars reached the UAE this year",d:"1 Feb to 17 Aug 2026",s:"Chinese brands launched more cars than everyone else put together, and five of the new cars still had no official UAE price months after going on sale.",n:"CarSwitch",u:"https://carswitch.com/newsroom/new-cars-launched-in-the-uae-in-2026/"},
+{r:"South Africa",t:"New vehicle sales rise 12.7% in September",d:"Reported 4 Oct 2026",s:"61,645 new vehicles were sold in September 2026, up from 54,706 a year earlier. About one in 20 new vehicles sold this year is electrified, and Toyota remains the top brand.",n:"EWN",u:"https://www.ewn.co.za/2026/10/04/sas-new-car-sales-boom-continues-as-new-energy-vehicle-adoption-accelerates"},
+{r:"South Africa",t:"Chinese brands grow fast; Jetour T2 is Car of the Year",d:"2026",s:"Chinese brands took more than 19% of new passenger and light-commercial sales in the first quarter of 2026, up 75% year on year. The Jetour T2 became the first Chinese vehicle to win the Car of the Year award.",n:"Engineering News",u:"https://www.engineeringnews.co.za/topic/jetour"},
+{r:"South Africa",t:"23 new cars shown at the Festival of Motoring",d:"Reported 1 Sep 2026",s:"Nearly all come from China and are due between late 2026 and early 2027.",n:"TopAuto",u:"https://topauto.co.za/?p=162408"},
+{r:"Thailand",t:"Thailand International Motor Expo returns",d:"2 to 13 Dec 2026",s:"The 43rd edition runs at IMPACT Challenger, Muang Thong Thani. Last year’s show took bookings for 75,246 cars, and electric vehicles were about half of the buyers in its prize draw.",n:"Motor Expo",u:"https://www.motorexpo.co.th/en/news/5362"},
+{r:"Thailand",t:"Land Cruiser FJ launched at the Bangkok motor show",d:"25 Mar to 5 Apr 2026",s:"Toyota launched the Land Cruiser FJ in Thailand at the show, where the next-generation Hilux was also on display.",n:"Top Gear Philippines",u:"https://www.topgear.com.ph/tag/2026-bangkok-international-motor-show"},
+{r:"Canada",t:"Omoda and Jaecoo confirm a late-2026 Canadian launch",d:"Coming late 2026",s:"The Chery brands’ electric SUVs would enter under a reduced 6.1% tariff, limited by a 49,000-unit yearly quota. Models, prices and dealer locations are not announced yet. Tesla has shipped Shanghai-built Model 3 cars to Canada since May.",n:"Drive Tesla Canada",u:"https://driveteslacanada.ca/news/omoda-jaecoo-canada-website-late-2026/"},
+{r:"Canada",t:"Kia sets Canadian prices for the 2027 PV5 Cargo",d:"At dealers by end of 2026",s:"Kia’s first electric work van has Canadian pricing and is due at dealerships before the end of the year.",n:"RPM",u:"https://rpmweb.ca/actualites-et-chroniques?model=kona"},
+{r:"Russia",t:"71 new car models entered the Russian market by July",d:"January to July 2026",s:"22 of them are built in Russia. They include the Atom and UMO 5 electric cars, Volga K50, K40 and C50, new Moskvich models and Jeland and Tenet crossovers.",n:"RIA Novosti via 1RU",u:"https://www1.ru/en/news/2026/08/22/atom-volga-moskvic-i-tenet-kakie-masiny-nacali-vypuskat-v-rossii-v-2026-godu.html"},
+{r:"Russia",t:"Lada Azimut crossover heads to production",d:"Production due Sep 2026",s:"AvtoVAZ showed the pre-production Azimut crossover and the Lada Iskra at the Innoprom exhibition in July.",n:"TASS",u:"https://tass.com/economy/2156117"},
+{r:"Russia",t:"Moskvich M70 and M90 crossovers",d:"On sale from spring 2026",s:"Both sit on a new platform with 1.5 L and 2.0 L turbo engines and a nine-speed gearbox.",n:"NAPI",u:"https://en.napinfo.ru/news/moskvich-m70-and-m90-cars-will-go-on-sale-in-spring-2026"},
+{r:"Indonesia",t:"GIIAS 2026 ran from 30 July to 9 August",d:"30 Jul to 9 Aug 2026",s:"The Jakarta-area show at ICE BSD City hosted more than 65 brands, six of them debuting, with a theme of smart and environmentally friendly vehicles.",n:"GAIKINDO",u:"https://www.gaikindo.or.id/en/the-2026-giias-automotive-exhibition-runs-from-july-30-to-august-9-2026/"},
+{r:"Indonesia",t:"Car exports reach 251,705 units by June",d:"January to June 2026",s:"Indonesia’s total car shipments abroad reached that level by the end of June 2026.",n:"VOI",u:"https://voi.id/en/amp/584620"},
+{r:"Indonesia",t:"iCAR V27, Aletra MPV and a new Audi Q model teased for GIIAS",d:"Show debuts, Jul 2026",s:"iCAR planned its first range-extended model, Aletra teased a three-row electric MPV, and Audi confirmed a new Q-series SUV for the show.",n:"Segmenty",u:"https://segmenty.com/GenerateNewsStaticJsps/GIIAS_2026_to_showcase_new_EV__hybrid__ICE_models.html"},
+{r:"Japan",t:"Nissan launches the refreshed Fairlady Z and Z NISMO",d:"On sale 14 Oct 2026",s:"Nissan put the updated Fairlady Z and the Fairlady Z NISMO on sale in Japan.",n:"Nissan Global Newsroom",u:"https://global.nissannews.com/en/channels/news"},
+{r:"Japan",t:"Toyota plans US-built Camry, Highlander and Tundra for Japan",d:"From 2026, announced 19 Dec 2025",s:"Toyota aims to bring the three American-built models to Japanese buyers, reintroducing the Camry and Highlander and offering the Tundra pickup.",n:"Toyota Global Newsroom",u:"https://global.toyota/en/newsroom/corporate/43750365.html"},
+{r:"Brazil",t:"Fiat Grande Panda expected as the new Argo",d:"Reported for Oct 2026",s:"Reports say it will be built in Betim from September, launch in October and replace the Argo, with a mild-hybrid option on higher trims. Fiat has not confirmed all details.",n:"ClubAlfa",u:"https://www.clubalfa.it/en/fiat-grande-panda-heres-when-it-will-debut-in-brazil-25769"},
+{r:"Brazil",t:"Nearly 100 new cars expected in 2026",d:"Survey from Jan 2026",s:"A survey by Vrum counted close to 100 possible launches, with GWM and Stellantis brands each expected to exceed ten. Many makers had not revealed their plans.",n:"Vrum",u:"https://www.vrum.com.br/aceleradas/2026/01/7327118-brasil-tera-quase-100-carros-lancados-em-2026-veja-modelos.html"},
+{r:"Brazil",t:"Renault Niagara pickup and Chevrolet Sonic compact SUV",d:"Planned for 2026",s:"Renault is preparing the Niagara pickup on its new modular platform, and Chevrolet confirmed the Sonic, a compact SUV derived from the Onix and built in Gravataí.",n:"Band",u:"https://www.band.com.br/bandmotor/noticias/10-lancamentos-de-carros-no-brasil-em-2026-do-novo-uno-a-suvs-eletricos-202512292305"},
+{r:"Oman",t:"Škoda officially launches in Oman",d:"2026",s:"A fully digital showroom opened in Muscat with partner Premium Motors, plus a service centre with eight work bays. The first line-up is petrol sedans and hatchbacks, including the new Octavia RS.",n:"Škoda Storyboard",u:"https://skoda-storyboard.com/en/press-releases/advancing-internationalisation-skoda-auto-launches-in-oman-strengthening-its-presence-in-the-middle-east"},
+{r:"Oman",t:"Dragon Auto Fest showcased premium Chinese cars in Muscat",d:"5 to 7 Mar 2026",s:"A first-of-its-kind festival with sedans, SUVs, electric and hybrid models from leading Chinese brands, plus Oman-specific previews.",n:"Zawya",u:"https://www.zawya.com/en/economy/gcc/dragon-auto-fest-2026-to-showcase-premium-chinese-cars-in-muscat-s16jj37j"},
+{r:"Oman",t:"Oman International Baja rescheduled",d:"17 to 19 Dec 2026",s:"The off-road event, an FIA candidate for the 2027 Baja Cups, was postponed from March because of hostilities in the Gulf region and runs on dunes in the Eastern Sands.",n:"Tribune News Network",u:"https://www.qatar-tribune.com/article/256702/sports/plans-outlined-for-rescheduled-new-oman-international-baja/amp"},
+{r:"Mexico",t:"56 new cars expected in Mexico in 2026",d:"Outlook from Jan 2026",s:"The list ranges from new Chinese brands to renewed best-sellers, including the Audi Q3, BMW iX3, Kia Seltos and Jeep Avenger. Some entries are still unconfirmed.",n:"Motorpasión México",u:"https://www.motorpasion.com.mx/industria/56-autos-que-llegaran-a-mexico-2026-marcas-nuevas-top-sellers-renovados"},
+{r:"Mexico",t:"Nissan plans five new models for Mexico",d:"Reported 24 Jul 2026",s:"They include a renewed Frontier pickup and the N6 sedan developed with Dongfeng, plus the electric N7.",n:"Tus Buenas Noticias",u:"https://www.tusbuenasnoticias.com/noticias/actualidad/2026/07/24/62480-5-modelos-nuevos-que-nissan-lanzara-en-mexico-este-ano"},
+{r:"Mexico",t:"GAC confirms a Mexican assembly plant and launches the GS7",d:"Reported 19 Aug 2026",s:"The Chinese maker plans local assembly in 2026 and has launched its GS7 SUV in Mexico.",n:"La Jornada",u:"https://www.jornada.com.mx/autores/Paco%20del%20Toro"},
+{r:"Mexico",t:"BMW will build the Neue Klasse in Mexico",d:"Reported 23 Jul 2026",s:"BMW’s next-generation Neue Klasse range is set to be manufactured in Mexico.",n:"La Jornada",u:"https://www.jornada.com.mx/autores/Paco%20del%20Toro"},
+{r:"Argentina",t:"More than 80 new models expected in 2026",d:"Outlook from Jan 2026",s:"Local and imported launches, with a strong Chinese presence, as the market aims for about 700,000 units after years near 400,000.",n:"Elonce",u:"https://www.elonce.com/uid-862095"},
+{r:"Argentina",t:"Toyota’s 2026 plan: bZ4X, new RAV4 and Lexus ES",d:"bZ4X and RAV4 in April, Lexus ES in September",s:"The bZ4X is Toyota’s first electric car in the country, alongside the new hybrid RAV4 and electric and hybrid Lexus ES versions later in the year.",n:"Autoweb",u:"https://www.autoweb.com.ar/?p=56635"},
+{r:"Argentina",t:"Volkswagen Golf GTI to return",d:"Due December 2026",s:"The Golf GTI is set to be sold in Argentina again at the end of the year.",n:"El Economista",u:"https://eleconomista.com.ar/autos/los-10-lanzamientos-mas-relevantes-2026-mercado-automotor-argentino-n91939/amp"},
+{r:"Egypt",t:"Cadillac returns to Egypt",d:"May 2026",s:"A new sales and service facility opened in East Cairo with partner Al Mansour Automotive.",n:"Egyptian Streets",u:"https://egyptianstreets.com/tag/cars-egypt/"},
+{r:"Egypt",t:"Chery launches the locally assembled Arrizo 6 GT",d:"5 Feb 2026",s:"Launched at the Automorrow show in Cairo with a 1.5-litre turbo engine and a six-speed dual-clutch gearbox, according to Chery Egypt.",n:"Chery Egypt",u:"https://chery-eg.com/en/news/chery-launches-arrizo-6-gt-in-egypt-at-automorrow"},
+{r:"Egypt",t:"Nine new car brands entered the Gulf and Egypt in 2026",d:"Reported 12 Oct 2026",s:"The UAE led with five of the nine, as luxury imports, electric cars and local production drove the launches.",n:"YallaMotor",u:"https://www.yallamotor.com/ar/news/new-car-brands-entered-gcc-egypt-2026-freelander-denza-icaur-deepal-li-auto-55752"},
+{r:"Saudi Arabia",t:"Renault Koleos launches in Saudi Arabia",d:"2026",s:"The new-generation Koleos made its regional debut in Diriyah through distributor Wallan Trading, with prices from SR112,900 before VAT.",n:"Arab News",u:"https://arab.news/r9pnw"},
+{r:"Saudi Arabia",t:"Škoda enters the Saudi market",d:"2026",s:"Škoda announced its official entry with a wide model line-up, one of its biggest Middle East expansions.",n:"Drive Arabia",u:"https://www.drivearabia.com/news/news-tag/ksa/"},
+{r:"Saudi Arabia",t:"All-new Toyota RAV4 launched in the Kingdom",d:"2026",s:"Abdul Latif Jameel Motors, Toyota’s Saudi distributor, announced the launch of the new RAV4.",n:"Drive Arabia",u:"https://www.drivearabia.com/news/news-tag/ksa/"},
+{r:"Chile",t:"New car sales rise 1.6% in August",d:"Reported 4 Sep 2026",s:"Chile sold 27,896 new light and medium vehicles in August, led by SUVs, with China the top origin.",n:"The Clinic",u:"https://www.theclinic.cl/2026/09/04/ventas-autos-nuevos-chile-agosto-2026-anac/"},
+{r:"Chile",t:"First-half sales up 5.5%",d:"January to June 2026",s:"153,574 units were sold, 83,247 of them SUVs. The industry association is aiming for about 320,000 for the year.",n:"24horas",u:"https://www.24horas.cl/actualidad/economia/autos-mas-vendidos-chile-2026-"},
+{r:"Motorsport",t:"Dakar 2027 will not be held in Saudi Arabia",d:"Reported 19 to 22 Oct 2026",s:"The organisers have confirmed the rally will not run in Saudi Arabia in 2027. Reports point to a start in Spain or Portugal and about 12 stages in Morocco, but the new route and dates are still awaited.",n:"Reuters via Sowetan",u:"https://www.sowetan.co.za/motoring/2026-10-22-dakar-rally-set-to-move-from-saudi-arabia-to-africa-in-2027-sources-say/"},
+{r:"Motorsport",t:"F1 keeps Qatar and Abu Dhabi on the 2026 calendar",d:"Confirmed early Oct 2026",s:"F1 says the final two races will go ahead on 29 November and 6 December, despite the Middle East conflict. The Saudi Arabian Grand Prix was cancelled earlier this year, and the Bahrain Grand Prix was run in Malaysia.",n:"The Judge 13",u:"https://thejudge13.com/2026/10/03/f1-confirms-qatar-and-abu-dhabi-will-remain-on-2026-calendar-despite-iran-conflict/"},
+{r:"Motorsport",t:"Baja 1000 starts and finishes in Los Cabos",d:"Race day 13 Nov 2026",s:"Motorcycles leave at 1 a.m. and cars at 9 a.m. Pacific Time from San José del Cabo, with more than 250 teams expected.",n:"Rio Times",u:"https://www.riotimesonline.com/baja-1000-los-cabos-2026/"},
+{r:"Motorsport",t:"2027 Rolex 24 moves a week later",d:"28 to 31 Jan 2027",s:"Daytona announced the 65th Rolex 24 for 28 to 31 January 2027, with the green flag on 30 January.",n:"RACER",u:"https://racer.com/2026/01/13/later-date-announced-for-2027-rolex-24"},
+{r:"Motorsport",t:"Le Mans 2027 set for 9 to 13 June",d:"Announced 2026",s:"The 95th 24 Hours of Le Mans is round five of the 2027 World Endurance Championship. This year’s race drew 350,105 spectators.",n:"24 Hours of Le Mans",u:"https://www.24h-lemans.com/en/news/95th-24-hours-of-le-mans-see-you-on-9-13-june-2027-60819"}];
+var nr="All";
+function drawNews(){var rs=["All"];NEWS.forEach(function(n){if(rs.indexOf(n.r)<0)rs.push(n.r)});
+$("nchips").innerHTML=rs.map(function(x){return '<button aria-pressed="'+(x===nr)+'">'+esc(x)+'</button>'}).join("");
+var bs=$("nchips").children;for(var i=0;i<bs.length;i++)bs[i].onclick=function(){nr=this.textContent;drawNews()};
+$("newsGrid").innerHTML=NEWS.filter(function(n){return nr==="All"||n.r===nr}).map(function(n){return '<article class="card"><span class="tag">'+esc(n.r)+'</span><h3>'+esc(n.t)+'</h3><p class="note" style="margin:0 0 8px">'+esc(n.d)+'</p><p style="margin:0 0 10px">'+esc(n.s)+'</p><a href="'+n.u+'" target="_blank" rel="noopener">Source: '+esc(n.n)+'</a></article>'}).join("")}
+drawNews();
+/* cinematic road */
+(function(){
+var cv=$('cine'),g=cv.getContext('2d'),W=0,H=0,hz=0,P=0,pos=0,tt=0,lt=0,dust=[],stg=-1,K=90,sc=$('scroll');
+var calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var STG=[{n:'Highway',p:'Smooth tarmac',e:['Highway','Tarmac','Normal','Gravel track']},{n:'Gravel track',p:'Loose surface ahead',e:['Country road','Gravel','Traction assist','Off-road trail']},{n:'Off-road trail',p:'Rough terrain',e:['Trail','Dirt and rocks','4x4 mode','Car guide below']}];
+function rs(){var d=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;g.setTransform(d,0,0,d,0,0);hz=H*.44}
+function mx(a,b,t){return a+(b-a)*t}
+function cl(a,b,t,s){s=s||1;return 'rgb('+(mx(a[0],b[0],t)*s|0)+','+(mx(a[1],b[1],t)*s|0)+','+(mx(a[2],b[2],t)*s|0)+')'}
+function bend(s){return Math.sin(s*.012)*60+Math.sin(s*.0047)*90}
+function hs(n){return Math.abs(Math.sin(n*12.9898)*43758.5453)%1}
+function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function geo(z){var dy=K/z;return{y:hz+dy,dy:dy,cx:W/2+(bend(pos+z)-bend(pos))*dy*.012,rw:dy*.72}}
+function draw(dt){
+var p=P,q=Math.min(1,p*1.6),a1=Math.max(0,1-p*1.8),a2=Math.min(1,p*1.6),x,y,i;
+var s0=g.createLinearGradient(0,0,0,hz);s0.addColorStop(0,cl([22,30,64],[78,138,196],p));s0.addColorStop(1,cl([244,138,76],[252,214,156],p));g.fillStyle=s0;g.fillRect(0,0,W,hz+1);
+var sx=W/2+(bend(pos+60)-bend(pos))*.6,sr=Math.max(W,H)*.35,sg=g.createRadialGradient(sx,hz-18,2,sx,hz-18,sr);sg.addColorStop(0,'rgba(255,236,190,.95)');sg.addColorStop(.25,'rgba(255,190,110,.35)');sg.addColorStop(1,'rgba(255,160,90,0)');g.fillStyle=sg;g.fillRect(0,0,W,hz+1);
+if(a1>0){g.globalAlpha=a1;g.fillStyle='#141827';var sh0=(pos*.3)%34;for(i=-1;i<W/34+2;i++){var bh=16+hs(i+Math.floor(pos*.3/34))*hz*.3;g.fillRect(i*34-sh0,hz-bh,30,bh)}g.globalAlpha=1}
+if(a2>0){g.globalAlpha=a2;for(var L=0;L<2;L++){g.fillStyle=L?'rgb(96,72,60)':cl([140,118,112],[160,116,96],p);g.beginPath();g.moveTo(0,hz);var f=L?.016:.011,sp=L?.7:.35;for(x=0;x<=W+12;x+=12){y=hz-(L?18:34)-Math.sin((x+pos*sp)*f)*(L?16:26)-Math.sin((x+pos*sp)*f*2.6)*(L?7:11);g.lineTo(x,y)}g.lineTo(W+12,hz);g.closePath();g.fill()}g.globalAlpha=1}
+var gA=[30,40,36],gB=[200,142,84],rA=[54,56,62],rB=[152,102,60];
+for(y=hz+1;y<H;y++){var dy=y-hz,z=K/dy,s=Math.floor((pos+z)/4)&1,cx=W/2+(bend(pos+z)-bend(pos))*dy*.012,rw=dy*.72;
+g.fillStyle=cl(gA,gB,q,s?.93:1);g.fillRect(0,y,W,1);
+g.fillStyle=cl(s?[220,50,45]:[240,240,240],s?[110,70,40]:[170,120,78],q);g.fillRect(cx-rw*1.1,y,rw*2.2,1);
+g.fillStyle=cl(rA,rB,q,s?.96:1);g.fillRect(cx-rw,y,rw*2,1);
+if(a1>0&&s){g.globalAlpha=a1*.9;g.fillStyle='#f4f4f4';g.fillRect(cx-dy*.012,y,dy*.024,1);g.fillRect(cx-rw*.93,y,dy*.014,1);g.fillRect(cx+rw*.93,y,dy*.014,1);g.globalAlpha=1}
+if(p>.3){g.globalAlpha=Math.min(.5,p-.3);g.fillStyle='#34200f';g.fillRect(cx-rw*.6,y,rw*.2,1);g.fillRect(cx+rw*.4,y,rw*.2,1);g.globalAlpha=1}}
+var hz0='rgba('+(mx(244,252,p)|0)+','+(mx(170,222,p)|0)+','+(mx(110,170,p)|0)+',';var hg=g.createLinearGradient(0,hz-6,0,hz+H*.14);hg.addColorStop(0,hz0+'.85)');hg.addColorStop(1,hz0+'0)');g.fillStyle=hg;g.fillRect(0,hz-6,W,H*.14+6);
+var base=Math.floor(pos/7);
+for(var k=14;k>=1;k--){var zz=k*7-(pos%7);if(zz<1.2)continue;var id=base+k,sd=id%2?1:-1,v=hs(id),G=geo(zz),ox=G.cx+sd*G.rw*(1.35+v*.6),oy=G.y,sz=G.dy*.32;
+if(a1>0){g.globalAlpha=a1;g.fillStyle='#10131c';g.fillRect(ox-sz*.04,oy-sz*3.2,sz*.08,sz*3.2);g.fillStyle='#ffd98a';g.fillRect(ox-sz*.3*sd-sz*.12,oy-sz*3.2,sz*.3,sz*.08);g.globalAlpha=1}
+if(a2>0){g.globalAlpha=a2;g.fillStyle=v>.5?'rgb(112,86,68)':'rgb(98,110,62)';g.beginPath();g.ellipse(ox,oy-sz*.2,sz*(.5+v*.5),sz*(v>.5?.38:.28),0,0,6.3);g.fill();g.globalAlpha=1}}
+var cw=Math.min(W*.62,300),steer=Math.max(-40,Math.min(40,-(bend(pos+8)-bend(pos))*.35)),jit=p>.4&&!calm?Math.sin(tt*40)*1.6*p:0,cx0=W/2+steer+jit,bob=calm?0:Math.abs(Math.sin(tt*16))*(.5+p*3),cy=H*.9-bob;
+if(p>.4&&!calm){for(i=0;i<2;i++)dust.push({x:cx0+(Math.random()<.5?-1:1)*cw*.38,y:cy+cw*.02,vx:(Math.random()-.5)*60,vy:-10-Math.random()*30,r:5+Math.random()*6,a:.45*Math.min(1,(p-.4)*3)})}
+for(i=dust.length-1;i>=0;i--){var d=dust[i];d.x+=d.vx*dt;d.y+=d.vy*dt;d.r+=dt*22;d.a-=dt*.5;if(d.a<=0){dust.splice(i,1);continue}g.fillStyle='rgba(214,170,120,'+d.a.toFixed(2)+')';g.beginPath();g.arc(d.x,d.y,d.r,0,6.3);g.fill()}
+g.save();g.translate(0,99999);g.fillStyle='rgba(0,0,0,.45)';g.beginPath();g.ellipse(cx0,cy+cw*.03,cw*.55,cw*.06,0,0,6.3);g.fill();
+g.fillStyle='#0c0d10';rr(cx0-cw*.46,cy-cw*.07,cw*.17,cw*.12,cw*.03);g.fill();rr(cx0+cw*.29,cy-cw*.07,cw*.17,cw*.12,cw*.03);g.fill();
+g.fillStyle=cl([150,26,24],[170,90,22],p);g.beginPath();g.moveTo(cx0-cw*.42,cy-cw*.3);g.lineTo(cx0-cw*.32,cy-cw*.5);g.lineTo(cx0+cw*.32,cy-cw*.5);g.lineTo(cx0+cw*.42,cy-cw*.3);g.closePath();g.fill();
+g.fillStyle='rgba(14,20,30,.92)';g.beginPath();g.moveTo(cx0-cw*.35,cy-cw*.32);g.lineTo(cx0-cw*.28,cy-cw*.46);g.lineTo(cx0+cw*.28,cy-cw*.46);g.lineTo(cx0+cw*.35,cy-cw*.32);g.closePath();g.fill();
+if(a1>0){g.globalAlpha=a1;g.fillStyle='#15161a';g.fillRect(cx0-cw*.4,cy-cw*.55,cw*.8,cw*.03);g.globalAlpha=1}
+if(a2>0){g.globalAlpha=a2;g.fillStyle='#15161a';g.fillRect(cx0-cw*.25,cy-cw*.56,cw*.5,cw*.03);g.fillStyle='#fff3b0';g.fillRect(cx0-cw*.2,cy-cw*.55,cw*.06,cw*.012);g.fillRect(cx0+cw*.14,cy-cw*.55,cw*.06,cw*.012);g.globalAlpha=1}
+g.fillStyle=cl([210,38,34],[232,122,28],p);rr(cx0-cw/2,cy-cw*.3,cw,cw*.26,cw*.05);g.fill();
+g.save();g.shadowColor='#ff2a22';g.shadowBlur=18;g.fillStyle='#ff3b30';rr(cx0-cw*.46,cy-cw*.24,cw*.2,cw*.06,cw*.02);g.fill();rr(cx0+cw*.26,cy-cw*.24,cw*.2,cw*.06,cw*.02);g.fill();g.restore();
+g.fillStyle='#eeeeee';rr(cx0-cw*.08,cy-cw*.19,cw*.16,cw*.06,cw*.01);g.fill();
+g.fillStyle='#15161a';rr(cx0-cw*.5,cy-cw*.07,cw,cw*.05,cw*.02);g.fill();g.restore();drawTruck(cx0,cy,cw,p,a1,a2);intro(cx0,cy,cw)}
+function drawTruck(cx,cy,w,p,a1,a2){
+var X=function(v){return cx+v*w},Y=function(v){return cy+v*w},i,org=cl([226,106,22],[238,126,30],p);
+g.fillStyle='rgba(0,0,0,.5)';g.beginPath();g.ellipse(cx,Y(.03),w*.56,w*.06,0,0,6.3);g.fill();
+[-.47,.30].forEach(function(o){g.fillStyle='#08090c';rr(X(o),Y(-.23),w*.17,w*.25,w*.04);g.fill();g.strokeStyle='#23252c';g.lineWidth=2;for(var k=0;k<6;k++){g.beginPath();g.moveTo(X(o)+3,Y(-.21)+k*w*.04);g.lineTo(X(o)+w*.17-3,Y(-.21)+k*w*.04);g.stroke()}});
+var cg=g.createLinearGradient(0,Y(-.62),0,Y(-.17));cg.addColorStop(0,'#2a2d35');cg.addColorStop(1,'#101216');g.fillStyle=cg;rr(X(-.40),Y(-.62),w*.80,w*.45,w*.025);g.fill();
+g.strokeStyle='#05060a';g.lineWidth=2;g.beginPath();g.moveTo(cx,Y(-.60));g.lineTo(cx,Y(-.19));g.stroke();
+g.fillStyle='rgba(255,255,255,.07)';g.beginPath();g.moveTo(X(-.38),Y(-.6));g.lineTo(X(-.12),Y(-.6));g.lineTo(X(-.26),Y(-.2));g.lineTo(X(-.38),Y(-.2));g.closePath();g.fill();
+g.fillStyle=org;rr(X(-.33),Y(-.71),w*.66,w*.10,w*.02);g.fill();
+g.fillStyle='#0d0e12';rr(X(-.44),Y(-.74),w*.88,w*.035,w*.01);g.fill();
+g.fillStyle='#b4bac4';rr(X(-.30),Y(-.81),w*.24,w*.075,w*.01);g.fill();rr(X(.06),Y(-.81),w*.24,w*.075,w*.01);g.fill();
+g.fillStyle='#8c929c';g.fillRect(X(-.30),Y(-.775),w*.24,w*.012);g.fillRect(X(.06),Y(-.775),w*.24,w*.012);
+g.fillStyle='#fff7cc';g.fillRect(X(-.40),Y(-.735),w*.04,w*.014);g.fillRect(X(.36),Y(-.735),w*.04,w*.014);
+g.fillStyle='#08090c';g.beginPath();g.arc(X(-.26),Y(-.36),w*.15,0,6.3);g.fill();g.fillStyle='#4a4d55';g.beginPath();g.arc(X(-.26),Y(-.36),w*.085,0,6.3);g.fill();g.fillStyle='#17181d';g.beginPath();g.arc(X(-.26),Y(-.36),w*.03,0,6.3);g.fill();
+g.strokeStyle='#23252c';g.lineWidth=3;g.setLineDash([5,4]);g.beginPath();g.arc(X(-.26),Y(-.36),w*.14,0,6.3);g.stroke();g.setLineDash([]);
+g.fillStyle='#c4381f';rr(X(.17),Y(-.46),w*.08,w*.13,w*.01);g.fill();g.fillStyle='#3b3e46';rr(X(.27),Y(-.46),w*.08,w*.13,w*.01);g.fill();
+g.fillStyle='rgba(255,255,255,.92)';g.font='800 '+(w*.062)+'px Archivo,sans-serif';g.textAlign='center';g.fillText('#HASHPATROL',X(.0),Y(-.53));g.textAlign='start';g.fillStyle=org;g.fillRect(X(-.14),Y(-.51),w*.28,w*.012);
+if(p>.4){var ma=.5*Math.min(1,(p-.4)*2);g.fillStyle='rgba(92,60,34,'+ma.toFixed(2)+')';for(i=0;i<16;i++){g.beginPath();g.ellipse(X(-.38+hs(i)*.76),Y(-.2-hs(i+7)*.16),w*(.01+hs(i+3)*.02),w*.012,0,0,6.3);g.fill()}}
+g.save();g.shadowColor='#ff2a22';g.shadowBlur=16;g.fillStyle='#ff3b30';rr(X(-.41),Y(-.40),w*.03,w*.15,w*.008);g.fill();rr(X(.38),Y(-.40),w*.03,w*.15,w*.008);g.fill();g.restore();
+g.fillStyle='#0f1014';rr(X(-.47),Y(-.12),w*.94,w*.085,w*.02);g.fill();g.fillStyle='#f2c200';g.beginPath();g.arc(X(-.40),Y(-.075),w*.018,0,6.3);g.fill();g.beginPath();g.arc(X(.40),Y(-.075),w*.018,0,6.3);g.fill();g.fillStyle='#eeeeee';rr(X(-.07),Y(-.11),w*.14,w*.05,w*.008);g.fill()}
+function intro(cx,cy,w){var ti=Math.min(1,tt/3.4),e=ti*ti*(3-2*ti),a=.95*(1-e);if(a<.01)return;var bw=.25+.75*e;g.fillStyle='rgba(0,0,0,'+a.toFixed(3)+')';g.beginPath();g.rect(0,0,W,H);g.moveTo(cx-w*.26,cy-w*.22);g.lineTo(W/2-W*.4*bw,hz);g.lineTo(W/2+W*.4*bw,hz);g.lineTo(cx+w*.26,cy-w*.22);g.closePath();g.fill('evenodd');g.save();g.shadowColor='#ff2a22';g.shadowBlur=22;g.fillStyle='#ff3b30';rr(cx-w*.41,cy-w*.40,w*.03,w*.15,w*.008);g.fill();rr(cx+w*.38,cy-w*.40,w*.03,w*.15,w*.008);g.fill();g.restore()}
+function stage(){var k=P<.34?0:P<.68?1:2;if(k===stg)return;stg=k;var d=STG[k],dots=document.querySelectorAll('.dots i');$('nm').textContent=d.n;$('pr').textContent=d.p;for(var j=0;j<4;j++)$('e'+(j+1)).textContent=d.e[j];for(j=0;j<dots.length;j++)dots[j].className=j===k?'on':''}
+function prog(){var r=sc.getBoundingClientRect();return Math.max(0,Math.min(1,-r.top/(sc.offsetHeight-innerHeight)))}
+function frame(ts){requestAnimationFrame(frame);var r=sc.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;var dt=Math.min(.05,((ts-lt)/1000)||0);lt=ts;tt+=dt;P=prog();pos=P*1400+(calm?0:tt*16);draw(dt);stage()}
+addEventListener('resize',rs);rs();requestAnimationFrame(frame);
+})();
+/* sample data */
+var CARS=[{n:"Sample Hatch A",type:"Hatchback",date:"Date TBA",price:"Price TBA",eng:"1.2 L petrol",pwr:"90 hp",drive:"FWD",tag:"Launch"},{n:"Sample SUV B",type:"Compact SUV",date:"Date TBA",price:"Price TBA",eng:"1.5 L turbo",pwr:"160 hp",drive:"AWD",tag:"Launch"},{n:"Sample Electric C",type:"Electric crossover",date:"Date TBA",price:"Price TBA",eng:"Dual motor",pwr:"300 hp",drive:"AWD",tag:"EV"},{n:"Sample 4x4 D",type:"Off-roader",date:"Date TBA",price:"Price TBA",eng:"2.0 L diesel",pwr:"200 hp",drive:"4x4",tag:"Off-road"}];
+var SPY=[{n:"Sample prototype 1",t:"Heavy camouflage, test mule on public road."},{n:"Sample prototype 2",t:"New headlight shape visible under wrap."}];
+var SHOWS=[{n:"SEMA Show (trade event)",w:"Las Vegas Convention Center, USA",d:"3 to 6 Nov 2026"},{n:"Los Angeles Auto Show",w:"Los Angeles Convention Center, USA",d:"20 to 29 Nov 2026 (media day 19 Nov)"},{n:"Thailand International Motor Expo",w:"IMPACT Challenger, Muang Thong Thani, Thailand",d:"2 to 13 Dec 2026"},{n:"Detroit Auto Show",w:"Huntington Place, Detroit, USA",d:"12 to 24 Jan 2027 (reported)"},{n:"London International Motor Show",w:"ExCeL London, UK",d:"26 to 28 Feb 2027"}];
+$("launchGrid").innerHTML=CARS.map(function(c){return '<article class="card"><span class="tag">'+esc(c.tag)+'</span><h3>'+esc(c.n)+'</h3><div>'+esc(c.type)+'</div><dl><dt>Launch</dt><dd>'+esc(c.date)+'</dd><dt>Price</dt><dd>'+esc(c.price)+'</dd><dt>Engine</dt><dd>'+esc(c.eng)+'</dd><dt>Power</dt><dd>'+esc(c.pwr)+'</dd></dl></article>'}).join("");
+$("spyGrid").innerHTML=SPY.map(function(s){return '<article class="card"><div class="spy">Photo goes here</div><h3>'+esc(s.n)+'</h3><div>'+esc(s.t)+'</div></article>'}).join("");
+$("showGrid").innerHTML=SHOWS.map(function(s){return '<article class="card"><h3>'+esc(s.n)+'</h3><dl><dt>Where</dt><dd>'+esc(s.w)+'</dd><dt>When</dt><dd>'+esc(s.d)+'</dd></dl></article>'}).join("");
+var opts=CARS.map(function(c,i){return '<option value="'+i+'">'+esc(c.n)+'</option>'}).join("");$("selA").innerHTML=opts;$("selB").innerHTML=opts;$("selB").value="1";
+function cmp(){var a=CARS[$("selA").value],b=CARS[$("selB").value],rows=[["Type","type"],["Launch","date"],["Price","price"],["Engine","eng"],["Power","pwr"],["Drive","drive"]];
+$("cmpTable").innerHTML='<tr><th></th><th>'+esc(a.n)+'</th><th>'+esc(b.n)+'</th></tr>'+rows.map(function(r){return '<tr><th>'+r[0]+'</th><td>'+esc(a[r[1]])+'</td><td>'+esc(b[r[1]])+'</td></tr>'}).join("")}
+$("selA").onchange=cmp;$("selB").onchange=cmp;cmp();
+/* native ads: house placeholders. Replace with paying advertisers or ad-network code on your own domain */
+var ADS=[
+{adv:"HashPatrol®",t:"Promote your dealership",s:"Sponsored listings put your new-car offers in front of people comparing launches and prices.",cta:"Message us",u:"https://www.instagram.com/hashpatrol"},
+{adv:"HashPatrol®",t:"Get more customers for your workshop",s:"Feature your workshop or service center next to the listings people check before booking.",cta:"Message us",u:"https://www.instagram.com/hashpatrol"},
+{adv:"HashPatrol®",t:"Showcase your car accessories",s:"Reach car lovers browsing guides, spy shots and comparisons.",cta:"Message us",u:"https://www.instagram.com/hashpatrol"}];
+function adHtml(n){var a=ADS[n%ADS.length];return '<span class="tag adtag">Sponsored</span><h3>'+esc(a.t)+'</h3><p style="margin:0 0 10px">'+esc(a.s)+'</p><a class="btn alt" href="'+a.u+'" target="_blank" rel="sponsored noopener" style="font-size:13px;padding:8px 12px">'+esc(a.cta)+'</a><p class="note" style="margin:8px 0 0">Ad · '+esc(a.adv)+'</p>'}
+function injectAds(id,every){var g=$(id);if(!g)return;var old=g.querySelectorAll('.adcard'),i;for(i=0;i<old.length;i++)old[i].remove();var kids=Array.prototype.slice.call(g.children),n=0;if(kids.length<every)return;for(i=every;i<=kids.length;i+=every){var a=document.createElement('article');a.className='card adcard';a.innerHTML=adHtml(n++);g.insertBefore(a,kids[i]||null)}}
+var _dn=drawNews,_di=drawInfra;
+drawNews=function(){_dn();injectAds('newsGrid',4)};
+drawInfra=function(f){_di(f);injectAds('infraGrid',3)};
+drawNews();drawInfra('all');injectAds('launchGrid',4);
+/* body styles and sales */
+var BS='All',BSL=['All','Hatchback','Sedan','SUV','Crossover','MPV/MUV','Coupe / sports','Convertible','Pickup','Supercar','Classic','Electric','Hydrogen','Concept'];
+function inBS(c){if(BS==='All')return true;var b=c.body;switch(BS){case 'Hatchback':return /hatch/i.test(b);case 'Sedan':return /sedan/i.test(b);case 'SUV':return /SUV|off-road|utility/i.test(b);case 'Crossover':return /crossover|raised wagon|shooting brake/i.test(b);case 'MPV/MUV':return /MPV|\bvan\b/i.test(b);case 'Coupe / sports':return /coupe|sports|supercar|hypercar|grand tourer|muscle/i.test(b);case 'Convertible':return /roadster|convertible/i.test(b);case 'Pickup':return /pickup/i.test(b);case 'Supercar':return /supercar|hypercar/i.test(b);case 'Classic':return +c.y<=1985;case 'Electric':return c.pt==='ev';case 'Hydrogen':return c.pt==='h2';case 'Concept':return /concept/i.test(b)}return true}
+function pickBS(n){BS=n;drawBS();var L=list();if(L.length&&L.indexOf(GC[cur])<0)cur=GC.indexOf(L[0]);drawList();drawPanel()}
+function drawBS(){$('bschips').innerHTML=BSL.map(function(x){return '<button aria-pressed="'+(x===BS)+'">'+esc(x)+'</button>'}).join('');var b=$('bschips').children;for(var i=0;i<b.length;i++)b[i].onclick=function(){pickBS(this.textContent)}}
+drawBS();
+var BSD=[['Hatchback','Compact body with a rear door that lifts up and a cargo area open to the cabin.'],['Sedan','Separate boot behind the rear seats, usually four doors.'],['SUV','Taller body and higher seating, often with more ground clearance or all-wheel drive.'],['Crossover','Built like a car but styled like an SUV, usually on a car-style body.'],['MPV/MUV','Seats six or more with flexible seating, made for families and groups.'],['Coupe / sports','Sporty body, often two doors with a sloping roofline.'],['Convertible','Roof that folds or lifts off for open-air driving.'],['Pickup','Open cargo bed behind the cabin, built for hauling.']];
+$('bsGrid').innerHTML=BSD.map(function(d){return '<button class="card bc" data-n="'+esc(d[0])+'"><h3>'+esc(d[0])+'</h3><small>'+esc(d[1])+'</small><br><small><b>See cars</b></small></button>'}).join('');
+var bb=$('bsGrid').children;for(var q=0;q<bb.length;q++)bb[q].onclick=function(){pickBS(this.getAttribute('data-n'));$('cars').scrollIntoView()};
+var BV=[['Variant','Petrol manual','Petrol AMT','CNG manual','Notes'],['Sigma','₹5.99 lakh','Not offered','Not offered','Base trim'],['Delta','About ₹7.00 lakh','About ₹7.50 lakh','About ₹7.92 lakh','Adds convenience features over Sigma'],['Zeta','About ₹8.00 lakh','About ₹8.50 lakh','About ₹8.92 lakh','Adds premium exterior and cabin features'],['Alpha','₹8.50 lakh (one report says ₹9.10 lakh)','Not captured','Not offered','Adds more features over Zeta'],['Alpha (O)','About ₹9.50 lakh','₹9.99 lakh','Not offered','Only trim with Level 2 ADAS, new for the 2026 facelift']];
+$('bvTable').innerHTML=BV.map(function(r,i){return '<tr>'+r.map(function(c){return i?'<td>'+esc(c)+'</td>':'<th>'+esc(c)+'</th>'}).join('')+'</tr>'}).join('');
+var SD={
+'India':[
+{t:'Top-selling models, September 2026',h:['Model','Sep 2026','Sep 2025','Year on year'],r:[['Maruti Baleno','25,392','13,173','+93%'],['Tata Nexon','20,456','Not captured','Not captured'],['Tata Punch (incl. EV)','20,333','15,891','+28%'],['Maruti Fronx','19,282','13,767','+40%'],['Maruti Dzire','17,754','20,038','-11%'],['Hyundai Creta','17,657','Not captured','Not captured'],['Maruti Swift','17,399','15,547','+12%'],['Mahindra Scorpio (N and Classic)','17,313','Not captured','Not captured'],['Maruti Ertiga','16,911','12,115','+40%']],n:'One more Maruti Suzuki model is also in the top 10. The top 10 together sold 191,332 units, up 15.5% from 165,725 a year earlier. Month-on-month figures by model were not captured.',s:['Autocar India','https://www.autocarindia.com/car-news-amp/top-10-best-selling-cars-in-september-2026-baleno-takes-top-spot-440998'],s2:['Carlelo','https://www.carlelo.com/news/top-10-best-selling-cars-september-2026']},
+{t:'Carmaker wholesale (dispatches), September 2026',h:['Carmaker','Units','Month on month','Year on year'],r:[['Maruti Suzuki','168,744','Not captured','+27.05%'],['Tata Motors','56,972','-12.7%','-4.52%'],['Mahindra','56,745','-4.2%','+0.91%'],['Hyundai','49,998','-8.1%','-3.01%'],['Kia','32,017','Not captured','+41.04%']],n:'Wholesale counts what makers ship to dealers.',s:['Autocar India','https://www.autocarindia.com/industry-amp/september-2026-car-sales-4-out-of-of-top-5-carmakers-record-mom-decline-440902']},
+{t:'Carmaker retail sales, September 2026',h:['Carmaker','Units','Month on month','Year on year'],r:[['Mahindra','57,343','Highest of the top 10','Not captured'],['Tata','57,254','Not captured','+28.66%'],['Hyundai','50,201','+6.84%','+31.46%'],['Kia','26,663','Second-highest of the top 10','+45.91%'],['Honda','5,283','Not captured','+42.51%'],['Renault','Not captured','+4.12%','+33.10%']],n:'Total Indian passenger vehicle retail sales rose 32.1% year on year. Retail counts cars sold to customers, so it differs from wholesale. Petrol cars led with 41.27% of retail sales.',s:['Autocar India','https://www.autocarpro.in/news/september-2026-car-retail-sales-135109?amp=1']}],
+'USA':[
+{t:'US new-vehicle sales, September 2026',h:['Measure','Value','Month on month','Year on year'],r:[['Sales pace (SAAR)','16.0 million','-3.5%','-3.7%'],['Sales volume (Cox forecast)','Not captured','-2.7%','+6.5%'],['SAAR, August','16.8 million','+2.7%','+1.6%'],['Average transaction price, September (J.D. Power)','$45,915','Not captured','+0.7%'],['Average listing price, August (Cox)','$49,486','+0.6% vs July','+1.9%']],n:'Volume was forecast up year on year because September had one more selling day and Labor Day fell in September this year. Cox raised its full-year forecast to 16.1 million.',s:['Mercer Capital','https://mercercapital.com/insights/blogs/auto-dealer-valuation-insights-blog/2026/september-2026-saar/'],s2:['Cox Automotive','https://www.coxautoinc.com/press-releases/q3-september-2026-cox-automotive-new-vehicle-sales-forecast-press-release/']}],
+'China':[
+{t:'China passenger vehicle sales, September 2026',h:['Measure','Units','Month on month','Year on year'],r:[['Total retail','1.618 million','+5.0%','-28.0%'],['New energy vehicle (NEV) retail','1.084 million','+7.8%','-16.7%'],['NEV wholesale','1.666 million','+10.0%','+11.3%'],['Passenger car exports','917,000','Not captured','+73.7%'],['NEV exports','558,000','+7.7%','+163.5%'],['BYD NEV retail','246,816','+5.5%','-28.9%'],['Geely NEV retail','119,682','+8.3%','-20.5%']],n:'NEVs reached a record share of about 67% of retail sales. January to September retail was 13.334 million, down 21.7%. Some reports quote slightly different figures.',s:['CnEVPost','https://cnevpost.com/2026/10/13/china-nev-market-share-sept-2026-byd-tesla/'],s2:['CnEVPost (NEV)','https://cnevpost.com/2026/10/12/china-sept-2026-nev-retail-cpca/']}],
+'Other markets':[
+{t:'Other markets',h:['Market','Period','Units','Year on year'],r:[['South Africa','Sep 2026','61,645','+12.7%'],['Chile','Aug 2026','27,896','+1.6%'],['Chile','Jan to Jun 2026','153,574','+5.5%']],n:'Month-on-month changes were not captured.',s:['EWN','https://www.ewn.co.za/2026/10/04/sas-new-car-sales-boom-continues-as-new-energy-vehicle-adoption-accelerates'],s2:['The Clinic','https://www.theclinic.cl/2026/09/04/ventas-autos-nuevos-chile-agosto-2026-anac/']}]};
+var SK=Object.keys(SD),sm=SK[0];
+function drawSales(){$('schips').innerHTML=SK.map(function(k){return '<button aria-pressed="'+(k===sm)+'">'+esc(k)+'</button>'}).join('');var b=$('schips').children;for(var i=0;i<b.length;i++)b[i].onclick=function(){sm=this.textContent;drawSales()};
+$('sbody').innerHTML=SD[sm].map(function(t){return '<h3 style="margin:24px 0 8px">'+esc(t.t)+'</h3><div class="tw"><table><tr>'+t.h.map(function(x){return '<th>'+esc(x)+'</th>'}).join('')+'</tr>'+t.r.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+esc(c)+'</td>'}).join('')+'</tr>'}).join('')+'</table></div><p class="note">'+esc(t.n)+' Source: <a href="'+t.s[1]+'" target="_blank" rel="noopener">'+esc(t.s[0])+'</a>'+(t.s2?' · <a href="'+t.s2[1]+'" target="_blank" rel="noopener">'+esc(t.s2[0])+'</a>':'')+'</p>'}).join('')}
+drawSales();
+/* daily news from data/news.json */
+(function(){
+fetch('data/news.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){
+var L=(d.items||[]).filter(function(n){return /^https?:\/\//.test(n.link)}).slice(0,90);
+if(!L.length)throw new Error('empty');
+$('dgrid').innerHTML=L.map(function(n){var dt=n.date?new Date(n.date):null,ds=dt&&!isNaN(dt)?dt.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';return '<article class="card"><span class="tag">'+esc(n.source||'News')+'</span><h3 style="font-size:16px"><a href="'+n.link+'" target="_blank" rel="noopener">'+esc(n.title)+'</a></h3><p class="note" style="margin:0">'+esc(ds)+'</p></article>'}).join('');
+var u=d.updated?new Date(d.updated):null;$('dnote').textContent='Updated '+(u&&!isNaN(u)?u.toLocaleString():'recently')+'. Headlines and links come from the publishers named on each card.';
+if(typeof injectAds==='function')injectAds('dgrid',6)}).catch(function(){$('dnote').textContent='Daily headlines will appear here once the daily update is switched on for this site.'})})();
+/* F1 schedule and launch watch */
+(function(){
+new Promise(function(){}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){var R=(d.races||[]).slice(0,8);if(!R.length)throw new Error('empty');
+function sess(r){var s=r.sessions;if(!Array.isArray(s)||!s.length)return '';var n=Math.ceil((Date.parse(r.date+'T23:59:59Z')-Date.now())/864e5),h=n>1?'Race in '+n+' days':n===1?'Race tomorrow':n===0?'Race day':'';
+return (h?'<p class="note" style="margin:8px 0 0"><b>'+h+'</b></p>':'')+'<ul style="margin:6px 0 0;padding-left:18px;font-size:14px">'+s.map(function(x){var d=new Date(x.date+'T'+(x.time||'12:00:00Z')),t=isNaN(d)?x.date:d.toLocaleString(undefined,x.time?{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}:{weekday:'short',day:'numeric',month:'short'});return '<li>'+esc(x.name)+': '+esc(t)+'</li>'}).join('')+'</ul>'}
+function fd(s){var t=new Date(s+'T12:00:00Z');return isNaN(t)?s:t.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+$('f1auto').innerHTML=R.map(function(r){var lt=r.time?new Date(r.date+'T'+r.time):null,tm=lt&&!isNaN(lt)?lt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'';return '<article class="card"><span class="tag">Round '+esc(r.round)+'</span><h3>'+esc(r.name)+'</h3><p class="note" style="margin:0 0 6px">Race: '+esc(fd(r.date))+(tm?' at '+esc(tm)+' your time':'')+'</p><div>'+esc(r.circuit||'')+'</div><div class="note">'+esc(r.place||'')+'</div>'+sess(r)+'</article>'}).join('');
+var u=d.updated?new Date(d.updated):null;$('f1note').textContent='Updated '+(u&&!isNaN(u)?u.toLocaleString():'recently')+'. Source: Jolpica F1 API. Dates can change, so check formula1.com.'}).catch(function(){$('f1note').textContent='The Formula 1 schedule will appear here once the daily update is switched on for this site.'});
+fetch('data/news.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){
+var re=/\b(launch(es|ed)?|unveil(s|ed)?|reveal(s|ed)?|debut(s|ed)?|goes on sale|on sale|world premiere)\b/i;
+var L=(d.items||[]).filter(function(n){return /^https?:\/\//.test(n.link)&&re.test(n.title)}).slice(0,12);if(!L.length)throw new Error('none');
+$('lwgrid').innerHTML=L.map(function(n){var dt=n.date?new Date(n.date):null,ds=dt&&!isNaN(dt)?dt.toLocaleDateString(undefined,{day:'numeric',month:'short'}):'';return '<article class="card"><span class="tag">'+esc(n.source||'News')+'</span><h3 style="font-size:16px"><a href="'+n.link+'" target="_blank" rel="noopener">'+esc(n.title)+'</a></h3><p class="note" style="margin:0">'+esc(ds)+'</p></article>'}).join('');
+$('lwnote').textContent='Found by keywords such as launch, unveil and reveal in the latest headlines. Dates and prices are not extracted, so open each link for details.'}).catch(function(){$('lwnote').textContent='Launch headlines will appear here after the daily update runs.'})})();
+/* time settings, live clock and F1 schedule */
+(function(){
+var Z=[['My time','local'],['UTC','UTC'],['India (IST)','Asia/Kolkata'],['UAE (Dubai)','Asia/Dubai'],['UK (London)','Europe/London'],['Central Europe','Europe/Paris'],['US Eastern','America/New_York'],['US Pacific','America/Los_Angeles'],['Mexico City','America/Mexico_City'],['Brazil (S\u00e3o Paulo)','America/Sao_Paulo'],['Japan (Tokyo)','Asia/Tokyo'],['Australia (Sydney)','Australia/Sydney']],S={zone:'local',h24:true},D=null;
+try{var sv=JSON.parse(localStorage.getItem('hpTime')||'null');if(sv&&sv.zone)S=sv}catch(e){}
+function opt(b){var o={},k;for(k in b)o[k]=b[k];if(S.zone!=='local')o.timeZone=S.zone;o.hourCycle=S.h24?'h23':'h12';return o}
+function zl(){for(var i=0;i<Z.length;i++)if(Z[i][1]===S.zone)return Z[i][0];return S.zone}
+function fmt(d,t){try{return d.toLocaleString(undefined,opt(t?{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}:{weekday:'short',day:'numeric',month:'short'}))}catch(e){return d.toISOString()}}
+function save(){try{localStorage.setItem('hpTime',JSON.stringify(S))}catch(e){}}
+function start(r){return new Date(r.date+'T'+(r.time||'12:00:00Z'))}
+function days(r){return Math.ceil((Date.parse(r.date+'T23:59:59Z')-Date.now())/864e5)}
+function render(){if(!D)return;$('f1auto').innerHTML=D.races.slice(0,8).map(function(r){var n=days(r),h=n>1?'Race in '+n+' days':n===1?'Race tomorrow':n===0?'Race day':'';
+return '<article class="card"><span class="tag">Round '+esc(r.round)+'</span><h3>'+esc(r.name)+'</h3><div>'+esc(r.circuit||'')+'</div><div class="note">'+esc(r.place||'')+'</div>'+(h?'<p class="note" style="margin:8px 0 0"><b>'+h+'</b></p>':'')+'<ul style="margin:6px 0 0;padding-left:18px;font-size:14px">'+(r.sessions||[]).map(function(x){var d=new Date(x.date+'T'+(x.time||'12:00:00Z'));return '<li>'+esc(x.name)+': '+esc(isNaN(d)?x.date:fmt(d,!!x.time))+'</li>'}).join('')+'</ul></article>'}).join('')}
+function tick(){var n=new Date(),c=$('tclock');if(c){try{c.textContent=n.toLocaleTimeString(undefined,opt({hour:'2-digit',minute:'2-digit',second:'2-digit'}))+' \u00b7 '+zl()}catch(e){c.textContent=n.toUTCString()}}
+var nx=$('nextrace');if(!nx||!D)return;var r=D.races.filter(function(x){return start(x)>n})[0];if(!r){nx.textContent='';return}
+var s=Math.max(0,Math.floor((start(r)-n)/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),sc=s%60,p=function(v){return v<10?'0'+v:''+v};
+nx.innerHTML='Next race: <b>'+esc(r.name)+'</b> starts in <b>'+d+'d '+p(h)+':'+p(m)+':'+p(sc)+'</b> ('+esc(fmt(start(r),true))+')'}
+var sel=$('tz');sel.innerHTML=Z.map(function(z){return '<option value="'+z[1]+'">'+esc(z[0])+'</option>'}).join('');sel.value=S.zone;
+sel.onchange=function(){S.zone=sel.value;save();render();tick()};
+var b=$('t24');function lab(){b.textContent=S.h24?'24-hour clock':'12-hour clock'}lab();b.onclick=function(){S.h24=!S.h24;save();lab();render();tick()};
+setInterval(tick,1000);tick();
+fetch('data/races.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){if(!(d.races||[]).length)throw new Error('empty');D=d;render();tick();var u=d.updated?new Date(d.updated):null;$('f1note').textContent='Updated '+(u&&!isNaN(u)?fmt(u,true):'recently')+'. The data refreshes every 6 hours. Source: Jolpica F1 API. Dates can change, so check formula1.com.'}).catch(function(){$('f1note').textContent='The Formula 1 schedule will appear here once the update is switched on for this site.'})})();
+/* region filter for daily news */
+(function(){var R=['All','USA','India','UK','Australia','Canada'],cur='All',g=$('dgrid'),box=$('dreg');
+function apply(){var cs=g.children;for(var i=0;i<cs.length;i++){var c=cs[i],t=c.querySelector('.tag');c.hidden=!(cur==='All'||c.classList.contains('adcard')||(t&&t.textContent.indexOf('\u00b7 '+cur)>-1))}}
+function chips(){box.innerHTML=R.map(function(x){return '<button aria-pressed="'+(x===cur)+'">'+esc(x)+'</button>'}).join('');var b=box.children;for(var i=0;i<b.length;i++)b[i].onclick=function(){cur=this.textContent;chips();apply()}}
+chips();new MutationObserver(apply).observe(g,{childList:true})})();
+/* day-by-day news archive */
+(function(){
+function render(d){var L=(d.items||[]).filter(function(n){return /^https?:\/\//.test(n.link)}).slice(0,90);
+$('dgrid').innerHTML=L.map(function(n){var dt=n.date?new Date(n.date):null,ds=dt&&!isNaN(dt)?dt.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';return '<article class="card"><span class="tag">'+esc(n.source||'News')+'</span><h3 style="font-size:16px"><a href="'+n.link+'" target="_blank" rel="noopener">'+esc(n.title)+'</a></h3><p class="note" style="margin:0">'+esc(ds)+'</p></article>'}).join('');
+if(typeof injectAds==='function')injectAds('dgrid',6)}
+fetch('data/archive/index.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(idx){var days=idx.days||[];if(!days.length)return;
+var s=$('dday');s.hidden=false;s.innerHTML='<option value="">Latest headlines</option>'+days.map(function(d){return '<option>'+esc(d)+'</option>'}).join('');
+s.onchange=function(){var v=s.value;fetch(v?'data/archive/news-'+v+'.json':'data/news.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){render(d);$('dnote').textContent=v?'Headlines saved on '+v+'. Links go to the original publishers.':'Showing the latest headlines.'}).catch(function(){$('dnote').textContent='That day is not available.'})}}).catch(function(){})})();
+/* world list from data/world.json */
+(function(){var W=[];
+function draw(){var q=$('wq').value.trim().toLowerCase(),c=$('wc').value;var L=W.filter(function(x){return(c==='All'||x.c===c)&&(x.m+' '+x.b+' '+x.c).toLowerCase().indexOf(q)>-1});
+$('wcount').textContent=L.length+' models'+(L.length>60?' (showing the first 60)':'');
+$('wlist').innerHTML=L.slice(0,60).map(function(x){return '<article class="card">'+(x.i?'<img loading="lazy" alt="'+esc(x.b+' '+x.m)+'" src="https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(x.i)+'?width=400" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:6px;margin-bottom:8px">':'')+'<span class="tag">'+esc(x.c||'Country not listed')+'</span><h3 style="font-size:16px">'+esc(x.b+' '+x.m)+'</h3><p class="note" style="margin:0 0 6px">'+(x.y?'First year: '+esc(x.y):'Year not listed')+'</p><a href="'+esc(x.u)+'" target="_blank" rel="noopener">'+(x.w?'Wikipedia':'Wikidata')+'</a>'+(x.i?' \u00b7 <a href="https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(x.i)+'" target="_blank" rel="noopener">Photo credit and license</a>':'')+'</article>'}).join('')}
+$('wq').oninput=draw;$('wc').onchange=draw;
+fetch('data/world.json').then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(d){W=d.models||[];if(!W.length)throw new Error('empty');
+var cs=[];W.forEach(function(x){if(x.c&&cs.indexOf(x.c)<0)cs.push(x.c)});cs.sort();
+$('wc').innerHTML='<option>All</option>'+cs.map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
+$('wnote').textContent='Source: Wikidata (public domain), updated weekly. Wikipedia links open the model\u2019s article.';draw()}).catch(function(){$('wnote').textContent='The worldwide list will appear here once the weekly update is switched on for this site.'})})();
+/* official car data from data/cars.json */
+(function(){var CD={};
+function nk(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function rows(a){return '<div class="tw"><table>'+a.filter(function(r){return r[1]}).map(function(r){return '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>'}).join('')+'</table></div>'}
+var _dp=drawPanel;
+drawPanel=function(){_dp();var c=GC[cur],d=c&&CD[nk(c.b)+'|'+nk(c.n)];if(!d)return;var h='',f=d.fe,n=d.ncap;
+if(tab==='Specs'&&f)h='<h3 style="margin-top:18px">Latest official data (US EPA, '+esc(d.year)+' model year)</h3>'+rows([['Version',f.variant],['Engine',f.engine],['Transmission',f.transmission],['Drive',f.drive],['Fuel',f.fuel],['Fuel economy',f.combined],['City / highway',f.cityHighway],['Electric range',f.range]])+'<p class="note">Source: fueleconomy.gov, collected automatically every day. US-market figures.</p>';
+if(tab==='Safety'&&n)h='<h3 style="margin-top:18px">Official US crash-test ratings (NHTSA, '+esc(n.year)+' model year)</h3>'+rows([['Version',n.variant],['Overall',n.overall&&n.overall+' of 5 stars'],['Frontal crash',n.front&&n.front+' of 5 stars'],['Side crash',n.side&&n.side+' of 5 stars'],['Rollover',n.rollover&&n.rollover+' of 5 stars']])+'<p class="note">Source: NHTSA, collected automatically every day. Ratings apply to the US version.</p>';
+if(h)$('panel').insertAdjacentHTML('beforeend',h)};
+fetch('data/cars.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('missing');return r.json()}).then(function(j){(j.cars||[]).forEach(function(x){CD[nk(x.make)+'|'+nk(x.model)]=x});drawPanel()}).catch(function(){})})();
+/* discounts */
+(function(){
+var DC={
+'India':[
+{t:'October 2026 maximum benefits, Maruti Suzuki',h:['Model','Up to','Note'],r:[['Victoris','₹1.65 lakh','Priced ₹10.50 to 19.99 lakh'],['Grand Vitara','₹1.36 lakh',''],['Invicto','₹95,000','Priced ₹25.02 to 28.71 lakh'],['Swift','₹71,000',''],['Celerio','₹67,500','Priced ₹4.70 to 6.75 lakh'],['Wagon R','₹67,000','Priced ₹4.99 to 7.24 lakh'],['Alto K10','₹57,500','Priced ₹3.70 to 5.45 lakh'],['S-Presso','₹37,500',''],['Jimny','₹35,000','Cash discount'],['Fronx (1.2 petrol)','₹22,100','Priced ₹6.90 to 11.89 lakh']],s:['Autocar India','https://www.autocarindia.com/car-news/maruti-victoris-gets-up-to-rs-165-lakh-discount-in-october-2026-441049'],s2:['Spinny','https://www.spinny.com/blog/maruti-suzuki-discounts-and-offers-october-2026/']},
+{t:'October 2026 maximum benefits, Tata',h:['Model','Up to','Note'],r:[['Curvv EV (pre-SeriesX)','₹3.35 lakh','Creative trim ₹2.85 lakh'],['Harrier EV (Fearless+ and Empowered)','₹2.75 lakh',''],['Punch EV Long Range','₹1.45 lakh','Outgoing version'],['Curvv','₹1.25 lakh',''],['Nexon','₹75,000','Nexon EV up to ₹45,000'],['Altroz','₹55,000',''],['Harrier','₹45,000',''],['Tiago','₹35,000',''],['Tigor','₹30,000','']],s:['Autocar India','https://www.autocarindia.com/car-news/tata-nexon-gets-up-to-rs-75000-discounts-in-october-2026-440935'],s2:['Spinny','https://www.spinny.com/blog/tata-motors-discounts-and-offers-october-2026/']},
+{t:'October 2026 maximum benefits, Hyundai',h:['Model','Up to','Note'],r:[['Creta N Line','₹1.25 lakh','One report says ₹1 lakh'],['Grand i10 Nios','₹75,000',''],['i20','₹65,000',''],['Aura','₹40,000','Priced from ₹5.98 lakh']],s:['Daily Jagran','https://www.thedailyjagran.com/auto/news/hyundai-discounts-october-2026-save-up-to-1-25-lakh-on-creta-n-line-venue-and-more-10332797']}],
+'USA':[
+{t:'US new-vehicle prices and incentives, 2026',h:['Measure','Value','Note'],r:[['Average new vehicle price, July','$49,855','Up 1.9% year on year; the highest of 2026'],['Average electric vehicle price, July','$56,126','Up 1.6% year on year'],['EV incentives, July','Down 24.3% year on year','Makers pulled models and cut supply'],['Financing','More 0% APR deals','Used to clear 2026 models as 2027 models arrive']],s:['The Next Web (KBB data)','https://thenextweb.com/news/us-ev-prices-rising-july-2026-incentives-supply'],s2:['Dealership Guy (Cox data)','https://news.dealershipguy.com/p/an-oem-incentive-war-is-not-coming-but-here-s-what-dealers-can-expect']}],
+'Australia':[
+{t:'Drive-away deals, October 2026 (Australian dollars)',h:['Car','Drive-away price','Offer ends','Note'],r:[['BYD Atto 1 Essential','$19,990','15 Dec 2026','Australia\u2019s cheapest new car; deliver by 31 Dec'],['Chery Tiggo 4','From $23,990','31 Oct 2026','Includes a $1,500 fuel card'],['Haval Jolion Premium','$23,990','Not stated','Down from $26,990'],['Chery Tiggo 4 hybrid','From $27,990','31 Oct 2026','After $2,000 cashback'],['Chery Tiggo 7','$29,990 petrol; $39,990 plug-in hybrid','31 Oct 2026','Includes a $2,000 fuel card'],['Leapmotor B03X','From $29,990','31 Dec 2026','Arrives in November; B10 from $38,990'],['GWM ORA 5','Lux $33,990; Ultra $36,990','31 Oct 2026','Free home charger with a novated lease'],['Nissan Ariya','From $42,990','31 Oct 2026','All four grades; deliver by 30 Nov'],['Skoda Kodiaq mild hybrid','From $49,990','31 Dec 2026','Matches the retail price, so on-road costs are free'],['GWM Cannon Alpha Lux PHEV','$57,490','31 Oct 2026','Or 0.88% finance, not both'],['Mercedes-Benz GLC 200 Special Edition','From $65,490','30 Nov 2026','Deliver by 31 Dec; GLC 350e from $98,990']],n:'Drive-away prices include on-road costs. Prices shown are for a typical buyer, and some use Victoria as the base. Deals vary by state and stock.',s:['Canberra Times','https://www.canberratimes.com.au/story/9365921/best-new-car-deals/'],s2:['Zecar','https://zecar.com/offers-and-deals/gwm']}],
+'UK':[
+{t:'UK new-car discounts',h:['Measure','Value','Note'],r:[['Volkswagen ID.3 125kW Essential Pure 52kWh','Typical price £21,989','£8,871 off list, or 29.6% (Feb 2026)'],['Popular new cars, typical savings','£6,700 to £12,600','Insider Car Deals data via Parkers (Feb 2026)'],['Where to find this month\u2019s deals','Which?, Parkers, What Car?, Auto Express','Check the date on each deal']],n:'Current October UK figures were not available to us. The numbers above are from February 2026 and may have changed.',s:['Parkers','https://www.parkers.co.uk/car-news/pcps-discounts-feb-2026/'],s2:['Which?','https://www.which.co.uk/cars/choosing-a-car/buying-a-car/buying-a-new-car/how-to-get-the-best-price-on-a-car']}]};
+var K=Object.keys(DC),m=K[0];
+function draw(){$('dchips').innerHTML=K.map(function(k){return '<button aria-pressed="'+(k===m)+'">'+esc(k)+'</button>'}).join('');var b=$('dchips').children;for(var i=0;i<b.length;i++)b[i].onclick=function(){m=this.textContent;draw()};
+$('dbody').innerHTML=DC[m].map(function(t){return '<h3 style="margin:24px 0 8px">'+esc(t.t)+'</h3><div class="tw"><table><tr>'+t.h.map(function(x){return '<th>'+esc(x)+'</th>'}).join('')+'</tr>'+t.r.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+esc(c)+'</td>'}).join('')+'</tr>'}).join('')+'</table></div><p class="note">Source: <a href="'+t.s[1]+'" target="_blank" rel="noopener">'+esc(t.s[0])+'</a>'+(t.s2?' · <a href="'+t.s2[1]+'" target="_blank" rel="noopener">'+esc(t.s2[0])+'</a>':'')+'</p>'}).join('')}
+draw()})();
+/* racing */
+(function(){
+var RC=[
+{s:'Formula 1',n:'United States Grand Prix',a:'2026-10-23',b:'2026-10-25',d:'23 to 25 Oct 2026',w:'Circuit of the Americas, Austin, USA',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'NASCAR',n:'Cup Series at Talladega',a:'2026-10-25',b:'2026-10-25',d:'25 Oct 2026',w:'Talladega Superspeedway, Alabama, USA',u:'https://www.nascar.com',l:'Official site'},
+{s:'Formula 1',n:'Mexico City Grand Prix',a:'2026-10-30',b:'2026-11-01',d:'30 Oct to 1 Nov 2026',w:'Autódromo Hermanos Rodríguez, Mexico City',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'NASCAR',n:'Cup Series at Martinsville',a:'2026-11-01',b:'2026-11-01',d:'1 Nov 2026',w:'Martinsville Speedway, Virginia, USA',u:'https://www.nascar.com',l:'Official site'},
+{s:'Formula 1',n:'São Paulo Grand Prix',a:'2026-11-06',b:'2026-11-08',d:'6 to 8 Nov 2026',w:'Interlagos, São Paulo, Brazil',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'NASCAR',n:'Championship Weekend',a:'2026-11-06',b:'2026-11-08',d:'6 to 8 Nov 2026',w:'Homestead-Miami Speedway, Florida, USA',x:'The Cup Series title race is on Sunday 8 Nov, after the Truck and O’Reilly Series finales.',u:'https://www.homesteadmiamispeedway.com',l:'Track site and tickets'},
+{s:'Off-road',n:'SCORE Baja 1000 (59th)',a:'2026-11-09',b:'2026-11-15',d:'9 to 15 Nov 2026',w:'Los Cabos, Baja California Sur, Mexico',x:'Race day is Friday 13 Nov: motorcycles at 1 a.m. and cars at 9 a.m. Pacific Time, starting and finishing in San José del Cabo. Trophy Trucks, buggies, UTVs, motorcycles and quads race about 1,000 miles; about 250 teams are expected. No ticket sales were announced.',u:'https://www.score-international.com',l:'SCORE International'},
+{s:'Formula 1',n:'Las Vegas Grand Prix',a:'2026-11-19',b:'2026-11-21',d:'19 to 21 Nov 2026',w:'Las Vegas Strip Circuit, USA',x:'A Saturday night race under lights.',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'Formula 1',n:'Qatar Grand Prix',a:'2026-11-27',b:'2026-11-29',d:'27 to 29 Nov 2026',w:'Lusail International Circuit, Qatar',x:'F1 and the FIA have confirmed it, but both Gulf rounds are being monitored because of the Middle East conflict.',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'Formula 1',n:'Abu Dhabi Grand Prix (finale)',a:'2026-12-04',b:'2026-12-06',d:'4 to 6 Dec 2026',w:'Yas Marina Circuit, Abu Dhabi, UAE',x:'Season finale. F1 had named Imola as a standby, but says it will race in Abu Dhabi.',u:'https://www.formula1.com',l:'Official site and tickets'},
+{s:'Off-road',n:'Dakar Rally 2027',a:'2027-01-09',b:'2027-01-22',d:'9 to 22 Jan 2027 (reported)',w:'Portugal start, then Morocco (reported)',x:'The organisers have confirmed the 1 to 15 Jan 2027 edition will not be held in Saudi Arabia, which returns for the 50th edition in 2028. Reports (including DirtFish) say it starts in Portugal and runs into Morocco from 9 to 22 Jan, with about 12 stages. The organisers say the official route will be revealed in the coming days, so check dakar.com.',u:'https://www.dakar.com',l:'Dakar official site'},
+{s:'Endurance',n:'Rolex 24 at Daytona',a:'2027-01-28',b:'2027-01-31',d:'28 to 31 Jan 2027',w:'Daytona International Speedway, Florida, USA',x:'The race starts on 30 Jan. The Roar Before the Rolex 24 test runs 22 to 24 Jan.',u:'https://www.imsa.com',l:'IMSA official site'},
+{s:'Endurance',n:'Mobil 1 Twelve Hours of Sebring',a:'2027-03-17',b:'2027-03-20',d:'17 to 20 Mar 2027',w:'Sebring International Raceway, Florida, USA',x:'The 75th running.',u:'https://www.imsa.com',l:'IMSA official site'},
+{s:'Endurance',n:'24 Hours of Le Mans (95th)',a:'2027-06-09',b:'2027-06-13',d:'9 to 13 Jun 2027',w:'Circuit de la Sarthe, Le Mans, France',x:'Round 5 of the 2027 FIA World Endurance Championship.',u:'https://www.24h-lemans.com',l:'Official site'},
+{s:'Endurance',n:'Motul Petit Le Mans',a:'2027-10-06',b:'2027-10-09',d:'6 to 9 Oct 2027',w:'Michelin Raceway Road Atlanta, Georgia, USA',x:'The 30th running and the 2027 IMSA season finale.',u:'https://www.imsa.com',l:'IMSA official site'},
+{s:'Off-road',n:'SCORE Baja 1000 (60th)',a:'2027-11-14',b:'2027-11-20',d:'14 to 20 Nov 2027',w:'Starts in Ensenada, Baja California, Mexico',x:'A peninsula run with the finish still to be announced.',u:'https://www.score-international.com',l:'SCORE International'}];
+var rs='All',SR=['All','Formula 1','NASCAR','Endurance','Off-road'];
+function drawRace(){$('rchips').innerHTML=SR.map(function(x){return '<button aria-pressed="'+(x===rs)+'">'+esc(x)+'</button>'}).join('');var b=$('rchips').children;for(var i=0;i<b.length;i++)b[i].onclick=function(){rs=this.textContent;drawRace()};
+var today=new Date().toISOString().slice(0,10);
+$('rgrid').innerHTML=RC.filter(function(r){return(rs==='All'||r.s===rs)&&r.b>=today}).map(function(r){return '<article class="card"><span class="tag">'+esc(r.s)+'</span><h3>'+esc(r.n)+'</h3><p class="note" style="margin:0 0 6px">'+esc(r.d)+'</p><div>'+esc(r.w)+'</div>'+(r.x?'<p class="note" style="margin:8px 0 0">'+esc(r.x)+'</p>':'')+'<p style="margin:10px 0 0"><a href="'+r.u+'" target="_blank" rel="noopener">'+esc(r.l)+'</a></p></article>'}).join('')}
+drawRace();
+var TR=[['Track','Location','Used for','Lap length'],['Circuit of the Americas','Austin, USA','F1 United States GP','5.513 km'],['Autódromo Hermanos Rodríguez','Mexico City','F1 Mexico City GP','4.304 km'],['Interlagos','São Paulo, Brazil','F1 São Paulo GP','4.309 km'],['Las Vegas Strip Circuit','Las Vegas, USA','F1 Las Vegas GP','6.201 km'],['Lusail International Circuit','Lusail, Qatar','F1 Qatar GP','5.419 km'],['Yas Marina Circuit','Abu Dhabi, UAE','F1 Abu Dhabi GP','5.281 km'],['Daytona International Speedway','Florida, USA','Rolex 24 (road course)','3.56 miles'],['Circuit de la Sarthe','Le Mans, France','24 Hours of Le Mans','13.626 km'],['Homestead-Miami Speedway','Florida, USA','NASCAR Championship Weekend','Not added yet']];
+$('rtTable').innerHTML=TR.map(function(r,i){return '<tr>'+r.map(function(c){return i?'<td>'+esc(c)+'</td>':'<th>'+esc(c)+'</th>'}).join('')+'</tr>'}).join('')})();
+/* overland concept */
+(function(){var O=[['Roof rack and storage boxes','Carries lockable aluminium boxes and recovery gear above the cab.',190,52],['LED light bar','A long bar of LED lights for night driving on trails.',412,56],['Snorkel','Lifts the engine air intake high to keep out dust and water.',520,86],['Awning','A roll-out shade for camp and cooking.',86,78],['Solar panel','Charges the auxiliary battery while the truck is parked.',326,64],['Fridge and power','An upright fridge run from a second battery and battery manager.',126,132],['Canopy and tool drawer','A weatherproof canopy with a tool drawer and storage on the rear tray.',270,142],['Water tank','About 70 L of onboard water for camp.',240,186],['Spare tyre','A full-size spare carried at the rear.',40,116],['Front bumper and winch','A steel bumper with recovery points and a 10,000 lb-class winch.',612,150],['Long-range fuel tank','Extra fuel capacity for remote routes.',272,238],['Long-travel suspension','Coilover shocks that soak up rough ground.',350,238],['Differential lockers','Lock the left and right wheels together for traction on loose ground.',216,268],['All-terrain tyres','Large tyres of about 35 inches with deep tread for gravel, mud and rock.',424,268]];
+var sv=$('ovsvg');sv.insertAdjacentHTML('beforeend',O.map(function(o,i){return '<g class="hs" tabindex="0" data-i="'+i+'"><circle cx="'+o[2]+'" cy="'+o[3]+'" r="11" fill="#f2c200" stroke="#111216" stroke-width="2"/><text x="'+o[2]+'" y="'+(o[3]+4)+'" text-anchor="middle" style="fill:#111;font:800 11px Archivo,sans-serif">'+(i+1)+'</text></g>'}).join(''));
+var go=function(el){var n=+el.getAttribute('data-i'),o=O[n];$('ovd').innerHTML='<b>'+(n+1)+'. '+esc(o[0])+':</b> '+esc(o[1])};
+var hs=sv.querySelectorAll('.hs');for(var i=0;i<hs.length;i++){hs[i].onclick=function(){go(this)};hs[i].onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go(this)}}}
+$('ovList').innerHTML=O.map(function(o,i){return '<article class="card"><h3>'+(i+1)+'. '+esc(o[0])+'</h3><p style="margin:0">'+esc(o[1])+'</p></article>'}).join('')})();
+/* hydrogen */
+(function(){
+var C=['Toyota Mirai (2026)','Hyundai Nexo (2nd gen)','Honda CR-V e:FCEV','BMW iX5 Hydrogen'];
+var R=[
+['Status',['On sale; only in California in the US','Revealed 2025, global rollout from 2026; unlikely to be widespread in the US','On sale in California, lease only','Series production planned for 2028']],
+['Price',['From $52,990 in the US, with $15,000 of free hydrogen','Not announced in the sources found','Lease only: $459/month for 3 years or $389/month for 6 years (2025 offers, fuel included); MSRP listed at $51,450','Not announced']],
+['Range',['402 miles (EPA)','Over 700 km (about 430 miles) claimed; 826 km WLTP projected','29 miles on battery alone; hydrogen range not found','Target of 750 km']],
+['Power and drive',['182 hp, rear-wheel drive','201 hp','174 hp, front-wheel drive','Test car: 125 kW fuel cell, 295 kW motor']],
+['Hydrogen storage',['Not added yet','Three tanks, about 6.7 kg (14.75 lb); fills in about 5 minutes','Not added yet','Two 700-bar tanks, 6 kg (test car)']],
+['Safety features',['Toyota Safety Sense 3.0 with full-speed radar cruise control; 8-year/100,000-mile warranty on key fuel-cell parts','Latest Hyundai safety tech on a stronger steel frame','Blind-spot alert, collision warning, driver attention monitor, child seat anchors','Not announced']],
+['Crash rating',['Not found','Not found','Not found','Not rated yet']],
+['Other features',['Regenerative braking charging a lithium-ion battery','Dual 12.3-inch screens, adaptive regenerative braking, 0 to 62 mph in 7.8 s','17.7 kWh battery you can plug in','Third-generation fuel cell developed with Toyota, built in Steyr, Austria']]];
+$('h2Table').innerHTML='<tr><th></th>'+C.map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'</tr>'+R.map(function(r){return '<tr><th>'+esc(r[0])+'</th>'+r[1].map(function(v){return '<td>'+esc(v)+'</td>'}).join('')+'</tr>'}).join('');
+var P=[['Fuel cell stack','Combines hydrogen with oxygen from the air to make electricity. The only exhaust is water.',40,30,160,56,'#f2c200'],['Battery','Stores electricity from the fuel cell and from regenerative braking.',220,30,160,56,'#c9ced6'],['Hydrogen tanks','Carbon-fibre tanks store compressed hydrogen, up to 700 bar in the BMW test car.',400,30,160,56,'#8e99a8'],['Power control unit','Manages electricity flow between the stack, battery and motor.',40,120,160,56,'#aeb6c2'],['Electric motor','Turns electricity into motion at the wheels.',220,120,160,56,'#6d7787'],['Fill port','Where the hydrogen nozzle connects; a fill takes about five minutes.',400,120,160,56,'#d99a2b']];
+var sv=$('h2svg');sv.innerHTML=P.map(function(p,i){return '<g class="part" tabindex="0" data-i="'+i+'"><rect x="'+p[2]+'" y="'+p[3]+'" width="'+p[4]+'" height="'+p[5]+'" rx="8" fill="'+p[6]+'" stroke="#111216" stroke-width="1.5"/><text x="'+(p[2]+p[4]/2)+'" y="'+(p[3]+p[5]/2+4)+'" text-anchor="middle" style="fill:#111">'+esc(p[0])+'</text></g>'}).join('')+'<text x="300" y="205" text-anchor="middle">Hydrogen flows from the tanks to the stack, and electricity flows to the motor</text>';
+var pr=sv.querySelectorAll('.part');for(var i=0;i<pr.length;i++){var go=function(){var p=P[+this.getAttribute('data-i')];$('h2d').innerHTML='<b>'+esc(p[0])+':</b> '+esc(p[1])};pr[i].onclick=go;pr[i].onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go.call(this)}}}
+var S=[['Worldwide','about 1,160'],['Europe','294'],['Germany','113'],['South Korea','198'],['Japan','161'],['China','203 confirmed (up to 384 reported)'],['USA','89 (74 in California)']];
+$('h2st').innerHTML=S.map(function(s){return '<article class="card"><div class="note" style="margin:0">'+esc(s[0])+'</div><div style="font-size:26px;font-weight:800">'+esc(s[1])+'</div></article>'}).join('');
+})();
+</script>
+</body>
+</html>
