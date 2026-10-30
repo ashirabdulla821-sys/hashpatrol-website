@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HashPatrol® – Car news, launches and service near you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f6;--fg:#111216;--mut:#5d6068;--card:#fff;--line:#d9dbdf;--sig:#f2c200;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101114;--fg:#f4f5f6;--mut:#9a9da6;--card:#181a1f;--line:#2b2e35;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101114;--fg:#f4f5f6;--mut:#9a9da6;--card:#181a1f;--line:#2b2e35;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.55 Archivo,system-ui,Arial,sans-serif}
+a{color:inherit}:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+.top{position:fixed;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top,0px) + 10px) 20px 10px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(#000a,#0000);color:#fff}
+.brand{font-weight:800;font-size:20px;text-decoration:none}.brand b{background:#fff;color:#111;padding:0 7px;margin-right:6px;border-radius:3px}
+.top nav{display:flex;gap:16px;font-size:14px;overflow-x:auto}.top nav a{text-decoration:none;opacity:.85;white-space:nowrap}
+/* scroll stage */
+.scroll{height:420vh;position:relative;background:#0b0c10}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;color:#fff}
+.scene{position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.scene.on{opacity:1}
+.sky{position:absolute;inset:0}
+.far,.mid{position:absolute;bottom:26%;left:0;width:320vw}
+.far{height:34%}.mid{height:22%}
+.ground{position:absolute;left:0;right:0;bottom:0;height:26%}
+.line{position:absolute;left:0;right:0;bottom:12%;height:5px}
+.car{position:absolute;left:50%;bottom:15%;width:min(96vw,760px);margin-left:calc(min(96vw,760px)/-2);will-change:transform;filter:drop-shadow(0 18px 14px #0008)}
+.car svg{width:100%;height:auto;display:block}
+.speed{position:absolute;inset:30% 0 30% 0;opacity:.18;background:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 26px)}
+.info{position:absolute;left:20px;right:20px;top:calc(env(safe-area-inset-top,0px) + 64px);max-width:520px}
+.info h1{font-weight:800;font-size:clamp(30px,6.5vw,64px);line-height:1;margin:0 0 6px;letter-spacing:-.02em}
+.info .price{display:inline-block;border-bottom:2px solid var(--sig);padding-bottom:2px;margin-bottom:16px;color:#e9e9ec}
+.spec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 22px;border-left:2px solid #fff6;padding-left:14px;font-size:14px}
+.spec span{display:block;font-size:12px;color:#c8cad0}.spec b{font-size:17px;font-weight:600}
+.hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);text-align:center;font-size:13px;color:#fffb}
+.dots{position:absolute;right:14px;top:50%;display:flex;flex-direction:column;gap:8px}.dots i{width:8px;height:8px;border-radius:50%;background:#fff5}.dots i.on{background:var(--sig)}
+/* content */
+section{padding:46px 0;border-bottom:1px solid var(--line)}
+h2{font-weight:800;font-size:clamp(24px,4vw,36px);margin:0 0 6px}
+.sub{color:var(--mut);margin:0 0 22px;max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h3{margin:0 0 4px;font-size:18px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--sig);color:#111;margin-bottom:8px}
+.card dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:14px}.card dt{color:var(--mut)}.card dd{margin:0}
+.spy{aspect-ratio:16/9;border-radius:6px;margin-bottom:10px;background:repeating-linear-gradient(135deg,var(--line) 0 10px,transparent 10px 20px);display:grid;place-items:center;color:var(--mut);font-size:13px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+select{width:100%;font:600 15px Archivo,sans-serif;padding:11px;border:2px solid var(--fg);border-radius:6px;background:var(--card);color:var(--fg)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:15px}th{color:var(--mut);font-weight:600;width:28%}
+.btns{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-block;padding:12px 18px;background:var(--fg);color:var(--bg);text-decoration:none;font-weight:600;border-radius:6px}.btn.alt{background:var(--sig);color:#111}
+.note{font-size:13px;color:var(--mut);margin-top:14px}
+footer{padding:30px 0 40px;color:var(--mut);font-size:14px}footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.srch{width:100%;font:600 16px Archivo,sans-serif;padding:13px 14px;border:2px solid var(--fg);border-radius:8px;background:var(--card);color:var(--fg);margin-bottom:12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.chips button,.tabs button{font:600 14px Archivo,sans-serif;padding:8px 14px;border:1px solid var(--fg);border-radius:999px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
+.chips button[aria-pressed="true"],.tabs button[aria-pressed="true"]{background:var(--sig);color:#111;border-color:#111}
+.enc{display:grid;grid-template-columns:260px 1fr;gap:16px}
+.rlist{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto}
+.ritem{text-align:left;font:inherit;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer}
+.ritem[aria-current="true"]{border:2px solid var(--fg)}.ritem small{display:block;color:var(--mut)}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;min-height:300px}
+.panel h3{margin:0 0 8px}.na{color:var(--mut);font-style:italic}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--line);font-size:13px;margin:0 6px 6px 0}
+.part{cursor:pointer}.part:hover rect,.part:focus rect,.part.sel rect{stroke:var(--sig);stroke-width:3}
+.xv text{fill:var(--fg);font:600 12px Archivo,sans-serif}
+@media (max-width:700px){.enc{grid-template-columns:1fr}.rlist{max-height:220px}}
+.bc{cursor:pointer;text-align:left;font:inherit;color:inherit}.bc:hover{border-color:var(--fg)}.bc small{color:var(--mut)}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.links a{padding:8px 14px;border:1px solid var(--fg);border-radius:999px;text-decoration:none;font-size:14px;font-weight:600}
+.scene{display:none!important}#cine{position:absolute;inset:0;width:100%;height:100%;display:block}.bar{position:absolute;left:0;right:0;height:6%;background:#000;z-index:2}.vig{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.55) 100%)}.info,.dots,.hint{z-index:3}
+.adtag{background:transparent;border:1px solid var(--fg);color:var(--fg)}.adcard{border-style:dashed}
+.hs{cursor:pointer}.hs:hover circle,.hs:focus circle{stroke:#fff;stroke-width:3}
+@media (max-width:560px){.cmp{grid-template-columns:1fr}.car{bottom:19%}}
+</style>
+</head>
+<body>
+<div class="top"><a class="brand" href="#top"><b>#</b>HashPatrol®</a><nav aria-label="Sections"><a href="#overland">Overland</a><a href="#brands">Brands</a><a href="#cars">Car guide</a><a href="#world">World list</a><a href="#hydrogen">Hydrogen</a><a href="#daily">Daily</a><a href="#news">News</a><a href="#racing">Racing</a><a href="#sales">Sales</a><a href="#discounts">Discounts</a><a href="#variants">Variants</a><a href="#sites">Websites</a><a href="#launches">Launches</a><a href="#spy">Spy shots</a><a href="#compare">Compare</a><a href="#shows">Autoshows</a><a href="#infrastructure">Service &amp; Infra</a></nav></div>
+
+<main id="top">
+<div class="scroll" id="scroll"><div class="stage">
+
+<div class="scene on" id="s0">
+<div class="sky" style="background:linear-gradient(#0d1024 0%,#3a1c4a 38%,#c8452e 72%,#f5a04a 100%)"></div>
+<div class="far" id="f0" style="background:#1a1428;clip-path:polygon(0 100%,0 50%,4% 50%,4% 30%,9% 30%,9% 60%,14% 60%,14% 20%,19% 20%,19% 55%,26% 55%,26% 35%,31% 35%,31% 65%,38% 65%,38% 25%,44% 25%,44% 55%,52% 55%,52% 40%,58% 40%,58% 70%,66% 70%,66% 30%,72% 30%,72% 55%,80% 55%,80% 45%,86% 45%,86% 60%,93% 60%,93% 35%,100% 35%,100% 100%)"></div>
+<div class="mid" id="m0" style="background:repeating-linear-gradient(90deg,#e5322d 0 40px,#fff 40px 80px);clip-path:polygon(0 80%,100% 80%,100% 100%,0 100%)"></div>
+<div class="ground" style="background:linear-gradient(#34363d,#1b1c20)"></div>
+<div class="line" id="l0" style="background:repeating-linear-gradient(90deg,#fff 0 70px,transparent 70px 140px)"></div>
+<div class="speed" id="sp0"></div>
+<div class="car" id="c0"><svg viewBox="0 0 600 190" aria-label="Illustration of a red racing coupe"><defs>
+<linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a4d"/><stop offset=".55" stop-color="#d1261f"/><stop offset="1" stop-color="#7d0f0c"/></linearGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b6179"/><stop offset=".5" stop-color="#121a24"/><stop offset="1" stop-color="#2d3b4c"/></linearGradient></defs>
+<ellipse cx="300" cy="172" rx="290" ry="9" fill="#0007"/>
+<path d="M18 138C18 122 52 114 108 108L186 86C212 68 262 58 322 58C384 58 424 74 452 96L526 104C566 110 584 122 584 138V152H18Z" fill="url(#rb)"/>
+<path d="M200 90C222 74 266 66 322 66C368 66 398 76 420 96L200 96Z" fill="url(#gl)"/>
+<path d="M60 120C150 110 290 104 560 118" stroke="#fff" stroke-opacity=".28" stroke-width="3" fill="none"/>
+<path d="M214 100H540" stroke="#7d0f0c" stroke-width="2"/>
+<path d="M30 112H96V119H30ZM44 119H52V136H44ZM76 119H84V136H76Z" fill="#14151a"/>
+<path d="M545 116L580 124L548 130Z" fill="#fff7c8"/><path d="M18 128H40V140H18Z" fill="#ff3b30"/>
+<path d="M18 150H584V158H18Z" fill="#14151a"/>
+<g id="w0"></g></svg></div>
+</div>
+
+<div class="scene" id="s1">
+<div class="sky" style="background:linear-gradient(#5aa0d6 0%,#bcd9ea 48%,#f6d9a8 78%,#e0a55c 100%)"></div>
+<div class="far" id="f1" style="background:#8a93a3;clip-path:polygon(0 100%,0 60%,8% 30%,15% 55%,24% 15%,33% 50%,42% 28%,52% 58%,62% 20%,72% 52%,82% 30%,92% 55%,100% 35%,100% 100%)"></div>
+<div class="mid" id="m1" style="background:#5d6b48;clip-path:polygon(0 100%,0 55%,10% 30%,22% 60%,35% 20%,48% 55%,60% 25%,74% 62%,88% 30%,100% 50%,100% 100%)"></div>
+<div class="ground" style="background:linear-gradient(#b5793c,#6e4521)"></div>
+<div class="line" id="l1" style="height:14px;bottom:10%;background:repeating-linear-gradient(90deg,#5a3818 0 90px,transparent 90px 200px);opacity:.45"></div>
+<div class="car" id="c1"><svg viewBox="0 0 600 240" aria-label="Illustration of an off-road 4x4"><defs>
+<linearGradient id="ob" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa43a"/><stop offset=".55" stop-color="#d9650f"/><stop offset="1" stop-color="#7c3706"/></linearGradient>
+<linearGradient id="gl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6e8aa3"/><stop offset=".5" stop-color="#1a2531"/><stop offset="1" stop-color="#3d4f63"/></linearGradient></defs>
+<ellipse cx="300" cy="222" rx="290" ry="10" fill="#0007"/>
+<path d="M40 176V130L92 120L140 80H402L452 114L552 124L568 142V176Z" fill="url(#ob)"/>
+<path d="M150 90H300V118H128ZM310 90H396L430 118H310Z" fill="url(#gl2)"/>
+<path d="M150 70H395M165 70V80M240 70V80M320 70V80M385 70V80" stroke="#15161a" stroke-width="5"/>
+<rect x="190" y="56" width="150" height="9" rx="3" fill="#15161a"/><circle cx="205" cy="60" r="4" fill="#fff6b0"/><circle cx="320" cy="60" r="4" fill="#fff6b0"/>
+<path d="M60 134C160 124 330 122 548 134" stroke="#fff" stroke-opacity=".3" stroke-width="3" fill="none"/>
+<path d="M540 126L566 132V146L540 140Z" fill="#fff6c8"/><path d="M40 134H56V150H40Z" fill="#ff3b30"/>
+<path d="M36 176H570V188H36Z" fill="#14151a"/><path d="M552 150H580V162H552Z" fill="#14151a"/>
+<g id="w1"></g></svg></div>
+</div>
+
+<canvas id="cine" aria-label="Cinematic drive from a highway to an off-road trail" role="img"></canvas><div class="bar" style="top:0"></div><div class="bar" style="bottom:0"></div><div class="vig"></div>
+<div class="info"><h1 id="nm">Highway</h1><div class="price" id="pr">Price TBA</div>
+<div class="spec"><div><span>Road</span><b id="e1">Highway</b></div><div><span>Surface</span><b id="e2">Tarmac</b></div><div><span>Drive mode</span><b id="e3">Normal</b></div><div><span>Next up</span><b id="e4">Gravel track</b></div></div></div>
+<div class="dots"><i class="on"></i><i></i><i></i></div>
+<div class="hint">Scroll to drive from the highway to the off-road trail</div>
+</div></div>
+
+<section id="overland"><div class="wrap"><h2>HashPatrol® Overland Concept</h2><p class="sub">An off-road expedition truck concept built for the trail. Tap a number to see what each part does.</p>
+<div class="tw"><svg id="ovsvg" viewBox="0 0 640 310" role="group" aria-label="Diagram of the HashPatrol overland truck concept" style="min-width:520px;width:100%"><defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset=".6" stop-color="#e06a14"/><stop offset="1" stop-color="#8a3a07"/></linearGradient></defs>
+<rect x="0" y="282" width="640" height="28" fill="#7a5a3a" opacity=".4"/><ellipse cx="330" cy="284" rx="290" ry="8" fill="#0006"/>
+<rect x="95" y="196" width="470" height="18" rx="4" fill="#15161a"/><rect x="235" y="214" width="75" height="16" rx="4" fill="#3a3d46"/>
+<circle cx="54" cy="150" r="30" fill="#0b0c0f"/><circle cx="54" cy="150" r="16" fill="#4a4d55"/>
+<rect x="76" y="90" width="262" height="12" rx="6" fill="#4a4d55"/>
+<rect x="78" y="102" width="252" height="96" rx="6" fill="#1d2027"/><rect x="78" y="102" width="252" height="9" rx="4" fill="#2c3039"/><path d="M205 112V194" stroke="#07080b" stroke-width="2"/><rect x="92" y="140" width="68" height="46" rx="4" fill="#2c3039"/>
+<path d="M96 196L150 112H178L124 196Z" fill="#e06a14" opacity=".85"/>
+<text x="262" y="170" text-anchor="middle" fill="#fff" style="font:800 19px Archivo,sans-serif">#HASHPATROL</text>
+<rect x="108" y="82" width="322" height="6" rx="2" fill="#0d0e12"/><rect x="140" y="62" width="64" height="20" rx="3" fill="#b4bac4"/><rect x="214" y="62" width="64" height="20" rx="3" fill="#b4bac4"/><rect x="290" y="76" width="70" height="5" fill="#2b4a7a"/><rect x="372" y="70" width="80" height="10" rx="2" fill="#1b1c21"/><g fill="#fff3b0"><rect x="376" y="73" width="6" height="4"/><rect x="388" y="73" width="6" height="4"/><rect x="400" y="73" width="6" height="4"/><rect x="412" y="73" width="6" height="4"/><rect x="424" y="73" width="6" height="4"/><rect x="436" y="73" width="6" height="4"/></g>
+<path d="M330 198V150L360 148L384 104H468L500 148L560 150L586 160V198Z" fill="url(#ovg)"/><path d="M392 112H462L488 146H382Z" fill="#1c2430"/><rect x="498" y="98" width="7" height="50" fill="#0d0e12"/><rect x="492" y="94" width="19" height="9" rx="3" fill="#0d0e12"/><rect x="474" y="128" width="12" height="12" rx="3" fill="#e06a14"/><rect x="574" y="156" width="12" height="8" fill="#fff7cc"/>
+<rect x="568" y="168" width="42" height="30" rx="4" fill="#0f1014"/><rect x="576" y="178" width="24" height="12" rx="2" fill="#3a3d46"/><rect x="360" y="198" width="140" height="6" rx="2" fill="#3a3d46"/>
+<g><circle cx="170" cy="236" r="46" fill="#0b0c0f"/><circle cx="170" cy="236" r="41" fill="none" stroke="#2a2c33" stroke-width="7" stroke-dasharray="9 7"/><circle cx="170" cy="236" r="26" fill="#4a4d55"/><circle cx="170" cy="236" r="9" fill="#17181d"/></g>
+<g><circle cx="470" cy="236" r="46" fill="#0b0c0f"/><circle cx="470" cy="236" r="41" fill="none" stroke="#2a2c33" stroke-width="7" stroke-dasharray="9 7"/><circle cx="470" cy="236" r="26" fill="#4a4d55"/><circle cx="470" cy="236" r="9" fill="#17181d"/></g>
+</svg></div><p id="ovd">Tap a number to see what each part does.</p>
+<p class="note">A concept illustration for HashPatrol®, not a vehicle on sale. The drawing is original and the equipment shown is typical of overland builds.</p>
+<h3 style="margin-top:24px">Concept equipment list</h3><div class="grid" id="ovList"></div></div></section>
+<section id="brands"><div class="wrap"><h2>Car brands of the world</h2><p class="sub">Browse automobile brands by country. Tap a brand to see its cars in the guide.</p>
+<input class="srch" id="bq" type="search" placeholder="Search brands, e.g. Hyundai" aria-label="Search brands">
+<div class="chips" id="bchips" role="group" aria-label="Filter brands by country"></div>
+<div class="grid" id="bgrid"></div>
+<p class="note" id="bnote"></p>
+<h3>Open data sources</h3><p class="sub">Free public sources for building the full worldwide database.</p>
+<div class="links"><a href="https://en.wikipedia.org/wiki/List_of_automobile_manufacturers" target="_blank" rel="noopener">Wikipedia: all manufacturers</a><a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vehicle API (US)</a><a href="https://www.fueleconomy.gov/feg/ws/index.shtml" target="_blank" rel="noopener">US fuel economy data</a><a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a><a href="https://www.globalncap.org" target="_blank" rel="noopener">Global NCAP</a><a href="https://www.euroncap.com" target="_blank" rel="noopener">Euro NCAP</a></div></div></section>
+<section id="cars"><div class="wrap"><h2>Car guide: every brand, every model</h2><p class="sub">Search any car, hydrogen model or concept car to see its specs, features, safety, parts layout and history.</p>
+<input class="srch" id="q" type="search" placeholder="Search brand or model, e.g. Mustang, Toyota, SUV" aria-label="Search cars">
+<div class="chips" id="bschips" role="group" aria-label="Filter by body style"></div>
+<div class="chips" id="chips" role="group" aria-label="Filter by brand"></div>
+<div class="enc"><div class="rlist" id="rlist"></div><div><div class="tabs" id="tabs" role="group" aria-label="Car details"></div><div class="panel" id="panel"></div></div></div>
+<p class="note">Only facts that are well established are filled in. Everything marked “Not added yet” needs verified data. A complete worldwide database needs a server that pulls from licensed sources, which this page can’t do on its own.</p></div></section>
+<section id="world"><div class="wrap"><h2>World car model list</h2><p class="sub">Car models from brands in every country, collected from open data. Search by model, brand or country.</p>
+<div class="cmp"><input class="srch" id="wq" type="search" placeholder="Search model or brand" aria-label="Search world car models" style="margin:0"><select id="wc" aria-label="Filter by country"><option>All</option></select></div>
+<p class="note" id="wcount"></p><div class="grid" id="wlist"></div><p class="note" id="wnote"></p></div></section>
+<section id="hydrogen"><div class="wrap"><h2>Hydrogen cars</h2><p class="sub">Fuel-cell cars on sale today and the first big premium one due in 2028, with hydrogen fuel stations worldwide.</p>
+<div class="tw"><table id="h2Table"></table></div>
+<p class="note">Figures are from the reports linked below and are marketing targets or US-market numbers where noted. Official specs differ by country. Sources: <a href="https://theevreport.com/toyota-announces-2026-mirai-fcev-specifications-and-pricing" target="_blank" rel="noopener">Toyota Mirai</a> · <a href="https://www.cars.com/news/fuel-cell/" target="_blank" rel="noopener">Cars.com</a> · <a href="https://www.edmunds.com/car-news/2026-hyundai-nexo-h
